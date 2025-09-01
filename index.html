@@ -136,6 +136,13 @@
         font-size: 17px;
         letter-spacing: 0.05em;
       }
+      .global{ 
+        font-family: "Asimovian", sans-serif;
+        font-weight: 600;
+        font-style: italic;
+        font-size: 17px;
+        
+      }
 
       @keyframes pulse {
         0% {
@@ -156,6 +163,11 @@
         color: #888;
         animation: none;
       }
+    #totalVisits{ 
+      font-size: 1.5em;
+      color: #00fff2; /* Gold color for total visits */
+      font-weight: bold;
+    }
 
       @media (max-width: 768px) {
         .grid {
@@ -177,7 +189,7 @@
       <p class="counter">
         You have visited this page <span id="visitCount">0</span> times.
       </p>
-      <p>You have visited this site <strong><span id="totalVisits">Loading...</span></strong> times globally.</p>
+      <p class="global"> Web has been visited <strong><span id="totalVisits">Loading...</span></strong> times in total.</p>
     </header>
 
     <div class="grid" id="festivals"></div>
