@@ -106,6 +106,19 @@
   text-decoration: none;  /* Remove underline from text link */
 }
 
+.header-container {
+  text-align: center; /* center the image */
+  padding-top: 20px;       /* spacing around */
+  padding-bottom: 30px;
+}
+
+.header-image {
+  width: 400px;       /* make image larger */
+  max-width: 90%;     /* responsive: max 90% of screen */
+  height: auto;       /* keep aspect ratio */
+  margin-bottom: 20px; /* extra spacing under image */
+}
+
 
     @keyframes pulse {
       0% { transform: scale(1); opacity: 1; }
@@ -127,7 +140,10 @@
 </head>
 <body>
   <div id="background"></div>
-  <h1>Nepali Festival Countdown</h1>
+  <header class="header-container">
+  <img src="Group 41.png" alt="Nepali Festival Countdown" class="header-image" />
+</header>
+
   <div class="grid" id="festivals"></div>
 
   <script>
