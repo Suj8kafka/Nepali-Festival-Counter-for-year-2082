@@ -1,4 +1,21 @@
 
+      //Site visited count
+       function getVisitCount() {
+            let visitCount = localStorage.getItem('visitCount');
+            return visitCount ? parseInt(visitCount) : 0;
+        }
+
+        // Function to update the visit count in localStorage and on the page
+        function updateVisitCount() {
+            let visitCount = getVisitCount();
+            visitCount++;
+            localStorage.setItem('visitCount', visitCount);
+            document.getElementById('visitCount').innerText = visitCount;
+        }
+
+        // Run the update on page load
+        updateVisitCount();
+        
       const festivals = [
         {
           name: "Nepali New Year / Mesh Sankranti / Biska Jatra",
@@ -297,3 +314,5 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
+      
+      
