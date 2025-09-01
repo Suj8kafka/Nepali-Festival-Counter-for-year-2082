@@ -104,12 +104,13 @@
         border-radius: 50%; /* Optional: to give a circular shape */
       }
 
-      /* If using text links (as text-based links, e.g., URLs), style them */
-      .festival-link {
-        font-size: 20px; /* Adjust font size for readability */
-        color: inherit; /* Make sure the text color matches the card */
-        text-decoration: none; /* Remove underline from text link */
-      }
+/* If using text links (as text-based links, e.g., URLs), style them */
+.festival-link {
+  font-size: 20px;  /* Adjust font size for readability */
+  color: inherit;  /* Make sure the text color matches the card */
+  text-decoration: none;  /* Remove underline from text link */
+}
+
 
       @keyframes pulse {
         0% {
@@ -131,17 +132,17 @@
         animation: none;
       }
 
-      @media (max-width: 768px) {
-        .grid {
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
-    </style>
-  </head>
-  <body>
-    <div id="background"></div>
-    <h1>Nepali Festival Countdown</h1>
-    <div class="grid" id="festivals"></div>
+    }
+  </style>
+</head>
+<body>
+  <div id="background"></div>
+  <h1>Nepali Festival Countdown</h1>
+  <div class="grid" id="festivals"></div>
 
     <script>
       const festivals = [
