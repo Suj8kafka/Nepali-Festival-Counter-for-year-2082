@@ -5,11 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nepali Festival Countdown</title>
     <script src="https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Asimovian&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Asimovian&display=swap"
+      rel="stylesheet"/>
+<!-- Firebase App (the core SDK) -->
+<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
 
-  <style>
+<!-- Firestore SDK (compat version) -->
+<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
+
+    <style>
       body {
         background-color: #c51c1c;
         color: #e0e0e0;
@@ -29,7 +36,6 @@
         z-index: -1;
       }
 
-     
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -50,7 +56,7 @@
         align-items: center;
         transition: transform 0.3s ease-in-out, background-color 0.3s;
       }
-      .name { 
+      .name {
         color: rgb(255, 255, 255);
       }
       .card:hover {
@@ -81,7 +87,6 @@
         font-size: 1.3em;
         text-align: center;
         margin-bottom: 10px;
-        ;
       }
 
       .count {
@@ -107,33 +112,30 @@
         border-radius: 50%; /* Optional: to give a circular shape */
       }
 
-/* If using text links (as text-based links, e.g., URLs), style them */
-.festival-link {
-  font-size: 20px;  /* Adjust font size for readability */
-  color: inherit;  /* Make sure the text color matches the card */
-  text-decoration: none;  /* Remove underline from text link */
-}
+      /* If using text links (as text-based links, e.g., URLs), style them */
+      .festival-link {
+        font-size: 20px; /* Adjust font size for readability */
+        color: inherit; /* Make sure the text color matches the card */
+        text-decoration: none; /* Remove underline from text link */
+      }
 
-.site-header {
-  text-align: center; /* Center the logo horizontally */
-  padding-bottom: 40px; /* Add bottom padding below the header */
-  padding-top: 20px; /* Optional: top padding for breathing room */
-  
-}
+      .site-header {
+        text-align: center; /* Center the logo horizontally */
+        padding-bottom: 40px; /* Add bottom padding below the header */
+        padding-top: 20px; /* Optional: top padding for breathing room */
+      }
 
-.logo {
-  max-width: 550px; /* Control logo size */
-  height: auto;
-}
-.counter{ 
-    font-family: "Asimovian", sans-serif;
-  font-weight: 600;
-  font-style: italic;
-  font-size: 17px;
-  letter-spacing: 0.05em;
-}
-
-
+      .logo {
+        max-width: 550px; /* Control logo size */
+        height: auto;
+      }
+      .counter {
+        font-family: "Asimovian", sans-serif;
+        font-weight: 600;
+        font-style: italic;
+        font-size: 17px;
+        letter-spacing: 0.05em;
+      }
 
       @keyframes pulse {
         0% {
@@ -155,28 +157,33 @@
         animation: none;
       }
 
-    @media (max-width: 768px) {
-      .grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+        .logo {
+          display: block;
+          max-width: 100%;
+          height: auto;
+          margin: 0 auto;
+        }
       }
-      .logo {
-  display: block;
-  max-width: 100%;
-  height: auto;
-  margin: 0 auto;
-}
-    }
-  </style>
-</head>
-<body>
-  <div id="background"></div>
- <header class="site-header">
-  <img src="Group 41.png" alt="Site Logo" class="logo">
-  <p class="counter">You have visited this page <span id="visitCount">0</span> times.</p>
-</header>
+    </style>
+  </head>
+  <body>
+    <div id="background"></div>
+    <header class="site-header">
+      <img src="Group 41.png" alt="Site Logo" class="logo" />
+      <p class="counter">
+        You have visited this page <span id="visitCount">0</span> times.
+      </p>
+      <p>You have visited this site <strong><span id="totalVisits">Loading...</span></strong> times globally.</p>
+    </header>
 
-  <div class="grid" id="festivals"></div>
+    <div class="grid" id="festivals"></div>
 
-   <script src="script.js"></script>
+    <script src="config.js"></script>
+   
+    <script src="script.js"></script>
   </body>
 </html>

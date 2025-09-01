@@ -1,21 +1,27 @@
+ function getVisitCount() {
+        let visitCount = localStorage.getItem('visitCount');
+        return visitCount ? parseInt(visitCount) : 0;
+    }
 
-      //Site visited count
-       function getVisitCount() {
-            let visitCount = localStorage.getItem('visitCount');
-            return visitCount ? parseInt(visitCount) : 0;
-        }
-
-        // Function to update the visit count in localStorage and on the page
-        function updateVisitCount() {
+    function updateVisitCount() {
+        // Check if this session has already been counted
+        if (!sessionStorage.getItem('sessionVisited')) {
             let visitCount = getVisitCount();
             visitCount++;
             localStorage.setItem('visitCount', visitCount);
             document.getElementById('visitCount').innerText = visitCount;
-        }
 
-        // Run the update on page load
-        updateVisitCount();
-        
+            // Mark session as visited
+            sessionStorage.setItem('sessionVisited', 'true');
+        } else {
+            // Just show the current count without incrementing
+            document.getElementById('visitCount').innerText = getVisitCount();
+        }
+    }
+
+    // Call on page load
+    window.onload = updateVisitCount;
+
       const festivals = [
         {
           name: "Nepali New Year / Mesh Sankranti / Biska Jatra",
