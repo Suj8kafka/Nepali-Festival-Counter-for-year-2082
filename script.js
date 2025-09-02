@@ -236,6 +236,8 @@ const festivals = [
   },
 ];
 
+
+
 function updateCountdown() {
   const now = new Date();
   // Separate upcoming and past festivals
@@ -281,6 +283,8 @@ function updateCountdown() {
     })
     .join("");
 }
+
+
 
 updateCountdown();
 setInterval(updateCountdown, 1000);
@@ -359,57 +363,83 @@ const db = firebase.firestore();
 
 const visitDoc = db.collection("siteData").doc("visitCount");
 
-// Count only once per session
-const isNewSession = !sessionStorage.getItem("sessionVisited");
 
-if (isNewSession) {
-  sessionStorage.setItem("sessionVisited", "true");
 
-  // Safe increment
-  visitDoc
-    .set(
-      {
-        count: firebase.firestore.FieldValue.increment(1),
-      },
-      { merge: true }
-    )
-    .catch((error) => {
-      console.error("Error updating visit count:", error);
-    });
+
+
+function hashIP(ip) {
+  let hash = 0;
+  for (let i = 0; i < ip.length; i++) {
+    const char = ip.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; 
+  }
+  return "v" + Math.abs(hash); 
 }
 
-// Display visit count
-visitDoc.onSnapshot((doc) => {
-  if (doc.exists) {
-    const data = doc.data();
-    document.getElementById("totalVisits").innerText = data.count || 0;
-  } else {
-    document.getElementById("totalVisits").innerText = "0";
+
+async function updateVisitCount(ipHash) {
+  const docRef = db.collection("visitors").doc(ipHash);
+  try {
+    await docRef.set(
+      {
+        ip: ipHash,
+        timestamp: Date.now()  
+      },
+      { merge: true }
+    );
+    console.log("Visitor recorded!");
+  } catch (error) {
+    console.error("Error updating visit count:", error);
   }
-});
+}
 
-//Local Storage and visitors
 
+async function showVisitCount() {
+  try {
+    const snapshot = await db.collection("visitors").get();
+    document.getElementById("totalVisits").innerText = snapshot.size;
+  } catch (error) {
+    console.error("Error fetching visit count:", error);
+    document.getElementById("totalVisits").innerText = "Error loading"; 
+  }
+}
+
+
+async function handleVisitor() {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    const ip = data.ip;
+    const ipHash = hashIP(ip);
+
+    await updateVisitCount(ipHash);
+    await showVisitCount();
+  } catch (err) {
+    console.error("Could not get IP:", err);
+    document.getElementById("totalVisits").innerText = "Error loading"; 
+  }
+}
+
+// LocalStorage functions 
 function getVisitCount() {
   let visitCount = localStorage.getItem("visitCount");
   return visitCount ? parseInt(visitCount) : 0;
 }
 
-function updateVisitCount() {
-  // Check if this session has already been counted
+function updateLocalVisitCount() {
   if (!sessionStorage.getItem("sessionVisited")) {
     let visitCount = getVisitCount();
     visitCount++;
     localStorage.setItem("visitCount", visitCount);
-    document.getElementById("visitCount").innerText = visitCount;
-
-    // Mark session as visited
     sessionStorage.setItem("sessionVisited", "true");
-  } else {
-    // Just show the current count without incrementing
-    document.getElementById("visitCount").innerText = getVisitCount();
   }
+  // If you want to display local count separately, e.g., in another element like <span id="localVisits"></span>
+  document.getElementById("visitCount").innerText = getVisitCount();
 }
 
-// Call on page load
-window.onload = updateVisitCount;
+// Combined onload (no overrides)
+window.onload = async () => {
+  updateLocalVisitCount(); // Run local if keeping it
+  await handleVisitor(); // Run Firebase for global count
+};
