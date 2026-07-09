@@ -1,4 +1,4 @@
-const festivals = [
+const festivalArtwork = [
   {
     name: "Nepali New Year / Mesh Sankranti / Biska Jatra",
     date: "2025-04-14",
@@ -236,7 +236,140 @@ const festivals = [
   },
 ];
 
+let festivals = festivalArtwork.map((festival) => ({ ...festival }));
 
+function normalizeFestivalText(text) {
+  return String(text ?? "")
+    .replace(/\uFEFF/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  const source = String(text).replace(/^\uFEFF/, "");
+
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index];
+    const nextChar = source[index + 1];
+
+    if (char === '"' && inQuotes && nextChar === '"') {
+      cell += '"';
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === "," && !inQuotes) {
+      row.push(cell);
+      cell = "";
+      continue;
+    }
+
+    if ((char === "\n" || char === "\r") && !inQuotes) {
+      if (char === "\r" && nextChar === "\n") {
+        index += 1;
+      }
+      row.push(cell);
+      if (row.some((value) => normalizeFestivalText(value))) {
+        rows.push(row);
+      }
+      row = [];
+      cell = "";
+      continue;
+    }
+
+    cell += char;
+  }
+
+  row.push(cell);
+  if (row.some((value) => normalizeFestivalText(value))) {
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function parseEnglishDate(dateText) {
+  const match = normalizeFestivalText(dateText).match(
+    /^(\d{4})\s+([A-Za-z]+)\s+(\d{1,2})$/
+  );
+
+  if (!match) {
+    return "";
+  }
+
+  const monthLookup = {
+    january: "01",
+    february: "02",
+    march: "03",
+    april: "04",
+    may: "05",
+    june: "06",
+    july: "07",
+    august: "08",
+    september: "09",
+    october: "10",
+    november: "11",
+    december: "12",
+  };
+
+  const month = monthLookup[match[2].toLowerCase()];
+  if (!month) {
+    return "";
+  }
+
+  return `${match[1]}-${month}-${match[3].padStart(2, "0")}`;
+}
+
+function normalizeFestivalName(rawName) {
+  return normalizeFestivalText(rawName)
+    .split("\n")[0]
+    .replace(/\s*\(.*$/, "")
+    .trim();
+}
+
+async function loadFestivalsFromCsv() {
+  try {
+    const response = await fetch("nepali_holidays.csv", { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Failed to load nepali_holidays.csv: ${response.status}`);
+    }
+
+    const csvText = await response.text();
+    const rows = parseCsv(csvText);
+
+    if (rows.length <= 1) {
+      return;
+    }
+
+    festivals = rows.slice(1).map((row, index) => {
+      const artwork =
+        festivalArtwork[index] ?? festivalArtwork[festivalArtwork.length - 1];
+      const rawName = row[0] ?? "";
+      const rawDate = row[2] ?? "";
+
+      return {
+        name: normalizeFestivalName(rawName),
+        date: parseEnglishDate(rawDate) || artwork.date,
+        link: artwork.link,
+      };
+    });
+
+    updateCountdown();
+  } catch (error) {
+    console.error("Using built-in festival fallback:", error);
+  }
+}
+
+loadFestivalsFromCsv();
 
 function updateCountdown() {
   const now = new Date();
