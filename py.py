@@ -19,6 +19,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 SOURCE = "https://www.hamropatro.com/en/nepali-public-holidays"
+FALLBACK_SOURCE = "https://nepalipatro.com.np/en/government-holiday"
+FALLBACK_API = "https://api.nepalipatro.com.np/goverment-holidays"
 ROOT = Path(__file__).resolve().parent
 NEPAL = timezone(timedelta(hours=5, minutes=45))
 MONTHS = ("Baishakh", "Jestha", "Ashar", "Shrawan", "Bhadra", "Ashwin", "Kartik", "Mangsir", "Paush", "Magh", "Falgun", "Chaitra")
@@ -118,7 +120,7 @@ def parse_page(html, expected_year=None):
         if len({record["date"] for record in records}) != len(records):
             raise CalendarError("Duplicate holiday dates were returned.")
         return Calendar(year, records, payload.get("today", {}))
-    except (KeyError, TypeError, json.JSONDecodeError) as error:
+    except (KeyError, TypeError, AttributeError, json.JSONDecodeError) as error:
         raise CalendarError(f"Malformed source calendar: {error}") from error
 
 
@@ -140,11 +142,11 @@ def validate_calendar(calendar, previous=()):
     return calendar
 
 
-def fetch_page(url):
+def fetch_document(url, navigation=False):
     for attempt in range(3):
         try:
-            # This is the public JSON navigation request used by Hamro Patro's own client.
-            request = Request(url + "?_rsc", headers={"User-Agent": "Utsav-Festival-Calendar/1.0", "Accept": "application/json", "RSC": "1"})
+            # The primary uses public JSON navigation; the fallback has a plain JSON feed.
+            request = Request(url + ("?_rsc" if navigation else ""), headers={"User-Agent": "Utsav-Festival-Calendar/1.0", "Accept": "application/json", **({"RSC": "1"} if navigation else {})})
             with urlopen(request, timeout=20) as response:
                 if "application/json" not in response.headers.get("Content-Type", ""):
                     raise CalendarError("The source did not return public calendar JSON.")
@@ -152,6 +154,8 @@ def fetch_page(url):
                 if len(content) > 3_000_000:
                     raise CalendarError("Source page exceeds the expected size.")
                 return content.decode("utf-8")
+        except UnicodeDecodeError as error:
+            raise CalendarError("The source calendar is not valid UTF-8.") from error
         except HTTPError as error:
             if error.code not in (408, 429, 500, 502, 503, 504) or attempt == 2:
                 raise CalendarError(f"Source request failed: HTTP {error.code}") from error
@@ -160,6 +164,120 @@ def fetch_page(url):
                 raise CalendarError(f"Source request failed: {type(error).__name__}") from error
         time.sleep(2 ** attempt)
     raise CalendarError("Source request did not complete.")
+
+
+def fetch_page(url):
+    return fetch_document(url, navigation=True)
+
+
+def parse_fallback_page(content, year):
+    """Read the same unauthenticated JSON used by Nepali Patro's holidays page."""
+    try:
+        items = json.loads(content)
+        if not isinstance(items, list) or len(items) > 1000:
+            raise CalendarError("Nepali Patro did not return a holiday list.")
+        by_date = {}
+        for item in items:
+            match = re.fullmatch(r"(\d{2})\.(\d{2})\.(\d{4})", item["bs"])
+            if not match:
+                raise CalendarError("Invalid Nepali Patro BS date.")
+            day, month, item_year = map(int, match.groups())
+            if item_year != year or not 1 <= month <= 12 or not 1 <= day <= 32:
+                raise CalendarError("Nepali Patro returned a different or invalid BS year/date.")
+            ad = date.fromisoformat(item["ad"])
+            if ad.isoformat() != item["ad"] or item["event_date"] != item["ad"]:
+                raise CalendarError("Nepali Patro Gregorian date fields disagree.")
+            if not date(year - 57, 4, 1) <= ad <= date(year - 56, 4, 30):
+                raise CalendarError("Nepali Patro date falls outside its BS year.")
+            description = json.loads(item["description"])
+            name = description.get("en")
+            if not isinstance(name, str):
+                raise CalendarError("Nepali Patro English holiday name is missing.")
+            name = " ".join(name.split())
+            if not name or len(name) > 3000 or "<" in name or ">" in name:
+                raise CalendarError("Nepali Patro holiday name is invalid.")
+            # Recurring generic office closures do not belong in the festival list.
+            if name.casefold() == "public holiday":
+                continue
+            bs = f"{day} {MONTHS[month - 1]} {year}"
+            entry = by_date.setdefault(ad.isoformat(), {"name": [], "date": ad.isoformat(), "nepaliDate": bs})
+            if entry["nepaliDate"] != bs:
+                raise CalendarError("Two Nepali dates disagree for the same Gregorian date.")
+            if name not in entry["name"]:
+                entry["name"].append(name)
+        records = [{**entry, "name": " / ".join(entry["name"])} for _, entry in sorted(by_date.items())]
+        return Calendar(year, records, {})
+    except (KeyError, TypeError, ValueError, AttributeError) as error:
+        if isinstance(error, CalendarError):
+            raise
+        raise CalendarError(f"Malformed Nepali Patro calendar: {error}") from error
+
+
+def prepare_fallback_refresh(fetch, previous=(), now=None):
+    now = now or datetime.now(timezone.utc)
+    today = now.astimezone(NEPAL).date()
+    # The AD year narrows the request to two possible BS editions; published
+    # New Year dates, rather than an assumed AD-to-BS offset/date, select one.
+    editions = {}
+    current = None
+    for year in (today.year + 57, today.year + 56):
+        calendar = parse_fallback_page(fetch(f"{FALLBACK_API}/{year}"), year)
+        editions[year] = calendar
+        if not calendar.records:
+            continue
+        try:
+            validate_calendar(calendar)
+        except CalendarError:
+            # A partially published future edition must not replace this year.
+            if calendar.records[0]["date"] > today.isoformat():
+                continue
+            raise
+        if calendar.records[0]["date"] <= today.isoformat():
+            current = calendar
+            break
+    if current is None:
+        raise CalendarError("Nepali Patro has no complete currently applicable calendar.")
+    if (today - date.fromisoformat(current.records[0]["date"])).days >= 366:
+        raise CalendarError("Nepali Patro's most recent applicable calendar is stale.")
+    year = current.year + 1
+    candidate = editions.get(year)
+    if candidate is None:
+        candidate = parse_fallback_page(fetch(f"{FALLBACK_API}/{year}"), year)
+    following = None
+    if candidate.records:
+        try:
+            following = validate_calendar(candidate)
+        except CalendarError:
+            if any(record["nepaliDate"].endswith(f" {year}") for record in previous):
+                raise
+    if following is None and any(record["nepaliDate"].endswith(f" {current.year + 1}") for record in previous):
+        raise CalendarError("The previously published next-year fallback calendar disappeared.")
+    calendars = [current] + ([following] if following else [])
+    records = []
+    retained = 0
+    for calendar in calendars:
+        by_date = {record["date"]: record for record in calendar.records}
+        # The government-holiday feed is narrower than a festival calendar.
+        # Keep known festival entries and names, including those absent from
+        # the fallback; use the primary source for authoritative corrections.
+        for record in previous:
+            if record["nepaliDate"].endswith(f" {calendar.year}"):
+                if record["date"] in by_date and by_date[record["date"]]["nepaliDate"] != record["nepaliDate"]:
+                    raise CalendarError("The fallback date conversion disagrees with the saved calendar.")
+                by_date[record["date"]] = record
+                retained += 1
+        merged = Calendar(calendar.year, sorted(by_date.values(), key=lambda record: record["date"]), {})
+        validate_calendar(merged, previous)
+        records.extend(merged.records)
+    records.sort(key=lambda record: record["date"])
+    return records, {
+        "source": "Nepali Patro", "sourceUrl": FALLBACK_SOURCE,
+        "checkedAt": now.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "calendarYear": current.year, "years": [calendar.year for calendar in calendars],
+        "recordCount": len(records), "firstDate": records[0]["date"], "lastDate": records[-1]["date"],
+        "nextYearAvailable": following is not None, "fallbackUsed": True,
+        "retainedRecordCount": retained,
+    }
 
 
 def read_previous(directory):
@@ -214,14 +332,23 @@ def render_files(records, metadata):
         writer.writerow([record["nepaliDate"], f"{ad.year} {AD_MONTHS[ad.month - 1]} {ad.day}", record["name"]])
     csv_text = stream.getvalue()
     metadata = {**metadata, "csvSha256": hashlib.sha256(csv_text.encode("utf-8")).hexdigest()}
-    snapshot = "// Generated by py.py from verified Hamro Patro dates.\nwindow.FESTIVAL_META = " + json.dumps(metadata, ensure_ascii=True, indent=2) + ";\nwindow.FESTIVAL_DATA = " + json.dumps(records, ensure_ascii=True, indent=2) + ";\n"
+    snapshot = "// Generated by py.py from validated published calendar dates.\nwindow.FESTIVAL_META = " + json.dumps(metadata, ensure_ascii=True, indent=2) + ";\nwindow.FESTIVAL_DATA = " + json.dumps(records, ensure_ascii=True, indent=2) + ";\n"
     return {"nepali_holidays.csv": csv_text, "festival-data.js": snapshot, "festival-meta.json": json.dumps(metadata, ensure_ascii=True, indent=2) + "\n"}
 
 
-def refresh(directory=ROOT, fetch=fetch_page, now=None):
+def refresh(directory=ROOT, fetch=fetch_page, now=None, fallback_fetch=None):
     directory = Path(directory)
     previous = read_previous(directory)
-    records, metadata = prepare_refresh(fetch, previous, now)
+    try:
+        records, metadata = prepare_refresh(fetch, previous, now)
+    except CalendarError as primary_error:
+        if fallback_fetch is None:
+            raise
+        print(f"Hamro Patro unavailable ({primary_error}); checking Nepali Patro.", file=sys.stderr)
+        try:
+            records, metadata = prepare_fallback_refresh(fallback_fetch, previous, now)
+        except CalendarError as fallback_error:
+            raise CalendarError(f"Both sources failed: Hamro Patro: {primary_error}; Nepali Patro: {fallback_error}") from fallback_error
     files = render_files(records, metadata)
     directory.mkdir(parents=True, exist_ok=True)
     staged = []
@@ -244,11 +371,11 @@ def main():
     parser.add_argument("--output-dir", type=Path, default=ROOT)
     args = parser.parse_args()
     try:
-        metadata = refresh(args.output_dir)
+        metadata = refresh(args.output_dir, fallback_fetch=fetch_document)
     except (CalendarError, OSError, ValueError) as error:
         print(f"Calendar refresh failed; saved calendar retained: {error}", file=sys.stderr)
         return 1
-    print(f"Verified {metadata['recordCount']} dates for BS {', '.join(map(str, metadata['years']))} from Hamro Patro.")
+    print(f"Verified {metadata['recordCount']} dates for BS {', '.join(map(str, metadata['years']))} from {metadata['source']}.")
     if not metadata["nextYearAvailable"]:
         print("Next-year dates are not complete yet; they will be checked again on the next run.")
     return 0

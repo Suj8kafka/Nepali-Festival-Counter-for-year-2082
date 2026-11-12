@@ -279,7 +279,10 @@ function updateOverview() {
   }
   const checked = Date.parse(festivalMeta.checkedAt || "");
   $("calendar-source").hidden = !Number.isFinite(checked);
-  if (Number.isFinite(checked)) $("calendar-source").innerHTML = 'Dates checked ' + escapeHtml(dateFormat.format(checked)) + ' &middot; Source: <a href="https://www.hamropatro.com/en/nepali-public-holidays" target="_blank" rel="noopener noreferrer">Hamro Patro</a>';
+  if (Number.isFinite(checked)) {
+    const source = festivalMeta.source === "Nepali Patro" ? {name:"Nepali Patro",url:"https://nepalipatro.com.np/en/government-holiday"} : {name:"Hamro Patro",url:"https://www.hamropatro.com/en/nepali-public-holidays"};
+    $("calendar-source").innerHTML = 'Calendar checked ' + escapeHtml(dateFormat.format(checked)) + ' &middot; Source: <a href="' + source.url + '" target="_blank" rel="noopener noreferrer">' + source.name + '</a>' + (festivalMeta.retainedRecordCount ? ' &middot; Includes saved festival entries.' : '');
+  }
   if (!remaining && festivals.length) {
     $("data-note").textContent = "You’ve reached the end of this calendar. Browse the year’s celebrations; upcoming dates will appear when the festival calendar is updated.";
     $("data-note").hidden = false;

@@ -1,6 +1,6 @@
 # Utsav — Nepali Festival Countdown
 
-A responsive festival calendar for Nepal, redesigned from the original Nepali Festival Counter. Festival dates are checked against Hamro Patro and updated automatically. The current edition and any complete published next-year edition are included.
+A responsive festival calendar for Nepal, redesigned from the original Nepali Festival Counter. Daily cloud refreshes use Hamro Patro, with Nepali Patro’s public government-holiday feed as a fallback. The current edition and any complete published next-year edition are included.
 
 ## Run locally
 
@@ -33,21 +33,23 @@ Open **http://127.0.0.1:4173**. You can also open index.html directly; it uses t
 The GitHub Actions workflow in [.github/workflows/calendar.yml](.github/workflows/calendar.yml) runs daily at **19:37 UTC / 01:22 Nepal time** and can also be run from the repository's Actions tab. It:
 
 1. Runs the scraper regression tests.
-2. Fetches the public JSON navigation data used by Hamro Patro's English holidays client and checks the next-year page.
+2. Fetches the public JSON navigation data used by Hamro Patro's English holidays client and checks the next-year page. If Hamro Patro refuses cloud requests (HTTP 403) or its data fails validation, uses the unauthenticated JSON feed behind [Nepali Patro’s government-holiday page](https://nepalipatro.com.np/en/government-holiday).
 3. Validates Gregorian dates, weekdays, Nepali year/month/day fields, complete-year coverage, and unexpected data loss.
 4. Updates nepali_holidays.csv, festival-data.js, and festival-meta.json together.
 5. Runs the JavaScript/date tests and commits the verified data and last-checked timestamp.
 6. Publishes the same verified files to GitHub Pages in the same workflow run.
 
+The fallback feed has a different scope. It groups events on the same date, excludes recurring generic public closures, and preserves existing festival entries and names so festivals missing from a government-holiday list do not disappear. Conflicting BS/AD mappings stop the refresh. The primary source remains responsible for corrections to saved festival entries; the fallback can add newly published dates and complete new-year editions. The page identifies which source was checked and whether saved entries are included.
+
 The last step is explicit: a commit made with GITHUB_TOKEN does not trigger a separate push workflow. Daily successful metadata commits also keep the repository active between changes to the holiday dates. GitHub can delay scheduled jobs; this is a daily refresh, not a real-time source connection.
 
-The site needs no server, database, secret API key, or computer left running. It checks the static CSV when opened, every six hours while open, and when returning to an old tab. Countdown calculations use midnight in Nepal, independent of the visitor's timezone. If the source is unavailable or malformed, no updated data is committed or deployed and the last good site remains online. The source/last-checked date is shown below the calendar. Check the Actions tab for a failed refresh.
+The static site and daily GitHub-hosted refresh need no server, database, secret API key, or computer left running. It checks the static CSV when opened, every six hours while open, and when returning to an old tab. Countdown calculations use midnight in Nepal, independent of the visitor's timezone. If both sources are unavailable or malformed, no updated data is committed or deployed and the last good site remains online. The source/last-checked date is shown below the calendar. Check the Actions tab for a failed refresh.
 
-Next-year dates are included only after Hamro Patro publishes a complete calendar. An empty next-year page is expected and is checked again the following day. Year badges and calendar descriptions come from the data. No lunar dates or future festival dates are guessed.
+Next-year dates are included only after a source publishes a complete calendar. An empty next-year page is expected and is checked again the following day. Year badges and calendar descriptions come from the data. No lunar dates or future festival dates are guessed.
 
 ## Run a refresh locally
 
-Python 3.10 or newer is required for the scraper. It uses only the Python standard library.
+Python 3.10 or newer is required for the scraper. It uses only the Python standard library. The command tries the primary source first, then the approved fallback.
 
 ~~~sh
 python py.py
@@ -80,7 +82,7 @@ The browser check needs Node.js 22 or newer, npm start running and an installed 
 - visitors.js — optional existing Firebase visitor integration.
 - nepali_holidays.csv — maintained festival dates.
 - tools/ — dependency-free development and verification utilities.
-- py.py — validated Hamro Patro scraper and atomic file preparation.
+- py.py — validated primary/fallback scraper and atomic file preparation.
 - festival-meta.json — source, checked timestamp, coverage, and CSV checksum.
 - .github/workflows/calendar.yml — daily refresh, validation, and Pages deployment.
 - tools/build-static.cjs — explicit allowlist for public deployment files.

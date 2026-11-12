@@ -234,7 +234,8 @@ try {
   await command("Page.reload", {ignoreCache:true});
   const liveMetadata=JSON.parse(await readFile("festival-meta.json","utf8"));
   await waitFor("document.getElementById('total-festivals')?.textContent==='"+liveMetadata.recordCount+"' && document.getElementById('calendar-source')?.hidden===false && !calendarLoading");
-  check(await evaluate("document.getElementById('calendar-source').textContent.includes('Hamro Patro') && document.getElementById('calendar-source').textContent.includes('Dates checked')"), "the production calendar displays its checked source and current record count");
+  check(await evaluate("document.getElementById('calendar-source').textContent.includes('"+liveMetadata.source+"') && document.getElementById('calendar-source').textContent.includes('Calendar checked')"), "the production calendar displays its checked source and current record count");
+  check(await evaluate("(()=>{const previous=festivalMeta;try{festivalMeta={...previous,source:'Nepali Patro',retainedRecordCount:45};updateOverview();const note=document.getElementById('calendar-source');return note.textContent.includes('Nepali Patro') && note.textContent.includes('Includes saved festival entries') && note.querySelector('a').href==='https://nepalipatro.com.np/en/government-holiday';}finally{festivalMeta=previous;updateOverview();}})()"), "the fallback source and retained festival entries are labelled accurately");
   await click("#about-calendar");
   check(await evaluate("document.getElementById('dialog-content').textContent.includes('"+liveMetadata.calendarYear+" BS')"), "the calendar explanation derives its year from the published data");
   await click("#close-dialog");

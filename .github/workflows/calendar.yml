@@ -34,7 +34,7 @@ jobs:
           python-version: '3.12'
       - name: Test the scraper without network access
         run: python -m unittest discover -s tools -p 'test_scraper.py' -v
-      - name: Refresh and validate Hamro Patro dates
+      - name: Refresh and validate published festival dates
         if: github.event_name != 'push'
         run: python py.py
       - name: Check JavaScript and festival calculations
@@ -48,7 +48,7 @@ jobs:
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'Refresh verified Hamro Patro festival calendar'
+            git commit -m 'Refresh verified festival calendar'
             git push origin HEAD:main
           fi
       - name: Prepare public site files
