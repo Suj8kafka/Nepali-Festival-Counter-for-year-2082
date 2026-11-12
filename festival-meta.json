@@ -1,7 +1,7 @@
 {
-  "source": "Hamro Patro",
-  "sourceUrl": "https://www.hamropatro.com/en/nepali-public-holidays",
-  "checkedAt": "2026-11-12T14:30:18Z",
+  "source": "Nepali Patro",
+  "sourceUrl": "https://nepalipatro.com.np/en/government-holiday",
+  "checkedAt": "2026-11-12T15:52:04Z",
   "calendarYear": 2083,
   "years": [
     2083
@@ -10,5 +10,7 @@
   "firstDate": "2026-04-14",
   "lastDate": "2027-04-06",
   "nextYearAvailable": false,
+  "fallbackUsed": true,
+  "retainedRecordCount": 45,
   "csvSha256": "3fff91e585cf84d6fb9e6ebf01dedb2e02963c513f42fc680d92009869038438"
 }
