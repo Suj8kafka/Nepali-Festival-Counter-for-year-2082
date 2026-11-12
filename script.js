@@ -109,6 +109,23 @@ function recordsFromCsv(text) {
   return records;
 }
 
+function validateCalendarRecords(records) {
+  if (!Array.isArray(records) || records.length < 20 || records.length > 1000) throw new Error("Incomplete calendar.");
+  const seen = new Set();
+  for (const record of records) {
+    const parts = String(record.date || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const date = parts && new Date(Date.UTC(Number(parts[1]),Number(parts[2])-1,Number(parts[3])));
+    if (!parts || date.toISOString().slice(0,10)!==record.date || !clean(record.name) || !/^\d{1,2} [A-Za-z]+ 20\d{2}$/.test(record.nepaliDate)) throw new Error("Invalid festival record.");
+    if (seen.has(record.date)) throw new Error("Duplicate festival date.");
+    seen.add(record.date);
+  }
+  return records;
+}
+function countdownValues(start, now = Date.now()) {
+  const diff = Math.max(0,start-now);
+  return {days:Math.floor(diff/DAY),hours:Math.floor(diff/3_600_000)%24,minutes:Math.floor(diff/60_000)%60,seconds:Math.floor(diff/1_000)%60};
+}
+
 function startOfFestival(date) { return Date.parse(date + "T00:00:00+05:45"); }
 function statusOf(festival, now = Date.now()) {
   return now < festival.start ? "upcoming" : now < festival.start + DAY ? "today" : "past";
@@ -131,6 +148,9 @@ function enrich(records) {
 
 let festivals = enrich(window.FESTIVAL_DATA || []);
 let featuredFestival = null;
+let festivalMeta = window.FESTIVAL_META || {};
+let calendarLoading = false;
+let lastCalendarCheck = 0;
 let activeDay = nepalDateKey();
 const state = { status: "upcoming", month: "all", search: "", view: "grid", limit: 6, calendar: activeDay.slice(0, 7) };
 let toastTimeout;
@@ -252,10 +272,14 @@ function updateOverview() {
   $("upcoming-count").textContent = remaining;
   $("past-count").textContent = festivals.length - remaining;
   if (festivals.length) {
-    const bsYear = festivals[0].nepaliDate.match(/\b20\d\d\b/)?.[0] || "";
+    const newYear = festivals.filter(festival => /^1 Baishakh /.test(festival.nepaliDate) && festival.start <= Date.now()).at(-1);
+    const bsYear = (newYear || festivals[0]).nepaliDate.match(/\b20\d\d\b/)?.[0] || "";
     document.querySelectorAll("[data-bs-year]").forEach((element) => { element.textContent = bsYear; });
     $("year-range").textContent = festivals[0].date.slice(0, 4) + " — " + festivals.at(-1).date.slice(0, 4);
   }
+  const checked = Date.parse(festivalMeta.checkedAt || "");
+  $("calendar-source").hidden = !Number.isFinite(checked);
+  if (Number.isFinite(checked)) $("calendar-source").innerHTML = 'Dates checked ' + escapeHtml(dateFormat.format(checked)) + ' &middot; Source: <a href="https://www.hamropatro.com/en/nepali-public-holidays" target="_blank" rel="noopener noreferrer">Hamro Patro</a>';
   if (!remaining && festivals.length) {
     $("data-note").textContent = "You’ve reached the end of this calendar. Browse the year’s celebrations; upcoming dates will appear when the festival calendar is updated.";
     $("data-note").hidden = false;
@@ -285,8 +309,7 @@ function updateCountdown() {
   $("nepal-clock").textContent = clockFormat.format(now);
   $("nepal-clock").dateTime = new Date(now).toISOString();
   if (featuredFestival) {
-    const diff = Math.max(0, featuredFestival.start - now);
-    const values = { days: Math.floor(diff / DAY), hours: Math.floor(diff / 3_600_000) % 24, minutes: Math.floor(diff / 60_000) % 60, seconds: Math.floor(diff / 1_000) % 60 };
+    const values = countdownValues(featuredFestival.start, now);
     Object.entries(values).forEach(([key, value]) => { $("count-" + key).textContent = String(value).padStart(2, "0"); });
   }
   document.querySelectorAll("[data-countdown-date]").forEach((element) => {
@@ -316,7 +339,9 @@ function showFestival(id) {
 }
 
 function showAboutCalendar() {
-  $("dialog-content").innerHTML = '<div class="dialog-copy dialog-info-copy"><p class="eyebrow">A LITTLE ABOUT UTSAV</p><h2 id="dialog-title">A calendar to keep us connected.</h2><p>Utsav brings together the festival dates in this project’s Nepali holiday calendar. The current edition covers 2083 BS (2026–2027), including cultural celebrations and national observances.</p><p>Countdowns begin at midnight in Nepal (Asia/Kathmandu, UTC +5:45). A festival is marked as “Celebrating today” for the full day in Nepal, wherever you’re visiting from.</p><p>Save the date downloads an all-day .ics event for your calendar app. Download calendar includes every date in this edition.</p><p>Dates come from the project’s <a href="nepali_holidays.csv" download>festival CSV</a>. Observance dates and local practices can vary; check local announcements when planning.</p><p class="photo-credits">Photography: <a href="https://www.bittiyapost.com/news/2025/10/27/19760" target="_blank" rel="noopener noreferrer">Chhath · Bittiya Post</a>; <a href="https://nepaltraveller.com/sidetrack/7-little-known-facts-about-buddhist-prayer-flags" target="_blank" rel="noopener noreferrer">Boudhanath · Nepal Traveller</a>; Holi · The Himalayan Times; Indra Jatra · Above the Himalaya.</p></div>';
+  const years = [...new Set(festivals.map(festival=>festival.nepaliDate.match(/20\d\d/)?.[0]).filter(Boolean))].join(" / ");
+  const gregorian = festivals[0].date.slice(0,4) + "-" + festivals.at(-1).date.slice(0,4);
+  $("dialog-content").innerHTML = '<div class="dialog-copy dialog-info-copy"><p class="eyebrow">A LITTLE ABOUT UTSAV</p><h2 id="dialog-title">A calendar to keep us connected.</h2><p>Utsav brings together the festival dates in this project’s Nepali holiday calendar. The current edition covers ' + escapeHtml(years) + ' BS (' + escapeHtml(gregorian) + '), including cultural celebrations and national observances.</p><p>Countdowns begin at midnight in Nepal (Asia/Kathmandu, UTC +5:45). A festival is marked as “Celebrating today” for the full day in Nepal, wherever you’re visiting from.</p><p>Save the date downloads an all-day .ics event for your calendar app. Download calendar includes every date in this edition.</p><p>Dates come from the project’s <a href="nepali_holidays.csv" download>festival CSV</a>. Observance dates and local practices can vary; check local announcements when planning.</p><p class="photo-credits">Photography: <a href="https://www.bittiyapost.com/news/2025/10/27/19760" target="_blank" rel="noopener noreferrer">Chhath · Bittiya Post</a>; <a href="https://nepaltraveller.com/sidetrack/7-little-known-facts-about-buddhist-prayer-flags" target="_blank" rel="noopener noreferrer">Boudhanath · Nepal Traveller</a>; Holi · The Himalayan Times; Indra Jatra · Above the Himalaya.</p></div>';
   $("festival-dialog").showModal();
 }
 
@@ -428,19 +453,38 @@ function updateLocalVisits() {
 }
 
 async function loadFestivalsFromCsv() {
-  if (location.protocol === "file:") return;
+  if (location.protocol === "file:" || calendarLoading) return;
+  calendarLoading = true;
+  lastCalendarCheck = Date.now();
   try {
-    const response = await fetch("nepali_holidays.csv", { cache: "no-store", signal: AbortSignal.timeout(8_000) });
+    const [response, metadataResponse] = await Promise.all([
+      fetch("nepali_holidays.csv", {cache:"no-store", signal:AbortSignal.timeout(8_000)}),
+      fetch("festival-meta.json", {cache:"no-store", signal:AbortSignal.timeout(8_000)}).catch(()=>null),
+    ]);
     if (!response.ok) throw new Error("Festival CSV unavailable.");
-    const records = enrich(recordsFromCsv(await response.text()));
-    if (!records.length) throw new Error("Festival CSV is empty.");
-    festivals = records;
-    updateOverview(); renderFeatured(); render();
+    const records = validateCalendarRecords(recordsFromCsv(await response.text()));
+    let metadata = festivalMeta;
+    if (metadataResponse?.ok) {
+      metadata = await metadataResponse.json();
+      if (metadata.recordCount !== records.length) throw new Error("Calendar metadata does not match its dates.");
+    }
+    festivals = enrich(records);
+    festivalMeta = metadata;
+    $("data-note").hidden = true;
+    alignCalendar(); updateOverview(); renderFeatured(); render();
   } catch {
     $("data-note").textContent = "Showing the saved festival calendar. Live calendar updates are temporarily unavailable.";
     $("data-note").hidden = false;
-  }
+  } finally { calendarLoading = false; }
 }
+
+document.addEventListener("visibilitychange",()=>{
+  if (!document.hidden) {
+    updateCountdown();
+    if (Date.now()-lastCalendarCheck >= 15*60_000) loadFestivalsFromCsv();
+  }
+});
+setInterval(loadFestivalsFromCsv,6*60*60_000);
 
 updateLocalVisits();
 updateOverview();

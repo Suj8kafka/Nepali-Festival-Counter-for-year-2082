@@ -1,6 +1,6 @@
 # Utsav — Nepali Festival Countdown
 
-A responsive festival calendar for Nepal, redesigned from the original Nepali Festival Counter. The current project CSV contains **44 dates for 2083 BS (2026–2027)**.
+A responsive festival calendar for Nepal, redesigned from the original Nepali Festival Counter. Festival dates are checked against Hamro Patro and updated automatically. The current edition and any complete published next-year edition are included.
 
 ## Run locally
 
@@ -28,22 +28,45 @@ Open **http://127.0.0.1:4173**. You can also open index.html directly; it uses t
 - An offline snapshot that matches the current CSV.
 - A prominent total visits count, existing session visit counts, and Firebase statistics shared with the original site. The last successful total is cached for offline use. Statistics load independently and cannot prevent the site from working.
 
-## Update the calendar
+## Automatic date updates
 
-1. Update nepali_holidays.csv with verified festival dates.
-2. Run npm run update:data to refresh festival-data.js.
-3. Run npm test.
+The GitHub Actions workflow in [.github/workflows/calendar.yml](.github/workflows/calendar.yml) runs daily at **19:37 UTC / 01:22 Nepal time** and can also be run from the repository's Actions tab. It:
 
-The CSV parser accepts the historical scraper’s shifted columns and corrected column order. It handles quoted multiline fields and matches festival imagery by name. The year indicator is derived from the dataset. Dates from future years are never guessed.
+1. Runs the scraper regression tests.
+2. Fetches Hamro Patro's English public holidays page and checks the next-year page.
+3. Validates Gregorian dates, weekdays, Nepali year/month/day fields, complete-year coverage, and unexpected data loss.
+4. Updates nepali_holidays.csv, festival-data.js, and festival-meta.json together.
+5. Runs the JavaScript/date tests and commits the verified data and last-checked timestamp.
+6. Publishes the same verified files to GitHub Pages in the same workflow run.
 
-Festival presentation is configured in CATALOG in script.js. Add descriptions, Nepali display names, or an image there when introducing a new festival. Image source notes are in assets/README.md.
+The last step is explicit: a commit made with GITHUB_TOKEN does not trigger a separate push workflow. Daily successful metadata commits also keep the repository active between changes to the holiday dates. GitHub can delay scheduled jobs; this is a daily refresh, not a real-time source connection.
+
+The site needs no server, database, secret API key, or computer left running. It checks the static CSV when opened, every six hours while open, and when returning to an old tab. Countdown calculations use midnight in Nepal, independent of the visitor's timezone. If the source is unavailable or malformed, no updated data is committed or deployed and the last good site remains online. The source/last-checked date is shown below the calendar. Check the Actions tab for a failed refresh.
+
+Next-year dates are included only after Hamro Patro publishes a complete calendar. An empty next-year page is expected and is checked again the following day. Year badges and calendar descriptions come from the data. No lunar dates or future festival dates are guessed.
+
+## Run a refresh locally
+
+Python 3.10 or newer is required for the scraper. It uses only the Python standard library.
+
+~~~sh
+python py.py
+npm test
+npm run build
+~~~
+
+On Windows, use py py.py or the project's virtual-environment Python if python is not on PATH. npm run update:calendar is an alias for python py.py. npm run update:data is retained for deliberately maintained CSV edits; manually edited data is no longer labelled as checked against Hamro Patro until a successful scrape replaces it.
+
+The historical CSV parser also accepts the original shifted columns. Source presentation is configured in CATALOG in script.js. Image source notes are in assets/README.md.
 
 ## Verify
 
 ~~~sh
 npm run check
 npm test
+python -m unittest discover -s tools -p test_scraper.py -v
 npm run test:browser
+npm run build
 ~~~
 
 The browser check needs Node.js 22 or newer, npm start running and an installed Chrome or Edge. Set CHROME_PATH for a browser in a different location, or UTSAV_TEST_URL for another preview address. It tests the UI and parallax with a fixed reference date, checks city-to-hill alignment across the scroll and opaque terrain beneath the skyline, blocks analytics and visitor writes, checks mobile widths, and saves screenshots and calendar downloads under the ignored .artifacts directory.
@@ -57,7 +80,10 @@ The browser check needs Node.js 22 or newer, npm start running and an installed 
 - visitors.js — optional existing Firebase visitor integration.
 - nepali_holidays.csv — maintained festival dates.
 - tools/ — dependency-free development and verification utilities.
-- py.py — the original calendar scraper; its output should be reviewed before replacing dates.
+- py.py — validated Hamro Patro scraper and atomic file preparation.
+- festival-meta.json — source, checked timestamp, coverage, and CSV checksum.
+- .github/workflows/calendar.yml — daily refresh, validation, and Pages deployment.
+- tools/build-static.cjs — explicit allowlist for public deployment files.
 
 The separate figma.html and z.html drafts are not part of the festival application.
 

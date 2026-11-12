@@ -85,6 +85,8 @@ try {
   const fixed = Date.parse("2026-11-12T06:15:00Z");
   await command("Page.addScriptToEvaluateOnNewDocument", { source: "(() => {const Original=Date, initial=Original.now(), fixed=" + fixed + ";window.Date=class extends Original{constructor(...args){super(...(args.length?args:[fixed+Original.now()-initial]));}static now(){return fixed+Original.now()-initial;}};})();" });
   await command("Page.addScriptToEvaluateOnNewDocument", { source: "(() => { const collection = { get: async () => ({size:1234}), doc: () => ({set:async () => {}}) }; const db={collection:()=>collection}; const app={firestore:()=>db}; window.firebase={apps:[app],app:()=>app,initializeApp:()=>app,firestore:()=>db}; })();" });
+  const fixture=JSON.parse(await readFile("tools/fixtures/festivals-2083.json","utf8"));
+  const fixtureScript = await command("Page.addScriptToEvaluateOnNewDocument", {source: "(()=>{const fixture="+JSON.stringify(fixture)+";Object.defineProperty(window,'FESTIVAL_DATA',{get:()=>fixture,set:()=>{},configurable:true});Object.defineProperty(window,'FESTIVAL_META',{get:()=>({}),set:()=>{},configurable:true});const original=window.fetch.bind(window);window.fetch=(input,options)=>{const url=new URL(typeof input==='string'?input:input.url,location.href);if(url.pathname.endsWith('/nepali_holidays.csv'))return original(new URL('tools/fixtures/calendar-2083.csv',location.href),options);if(url.pathname.endsWith('/festival-meta.json'))return Promise.resolve(new Response(JSON.stringify({recordCount:fixture.length,calendarYear:2083}),{headers:{'Content-Type':'application/json'}}));return original(input,options);};})();"});
   await command("Page.navigate", { url: base });
   await waitFor("document.querySelectorAll('.festival-card').length===6 && document.getElementById('featured-name').textContent==='Chhath Parva'");
   check(await evaluate("document.getElementById('total-festivals').textContent==='44'"), "all 44 festival dates load");
@@ -223,10 +225,20 @@ try {
   await command("Emulation.setDeviceMetricsOverride", { width: 320, height: 760, deviceScaleFactor: 1, mobile: true });
   check(await evaluate("document.documentElement.scrollWidth<=innerWidth"), "320px mobile layout has no overflow");
   check(await evaluate("(()=>{const range=document.createRange();range.selectNodeContents(document.getElementById('landscape-title'));const r=range.getBoundingClientRect();return r.left>=0 && r.right<=innerWidth})()"), "the landscape title fits the smallest supported screen");
-  await command("Network.setBlockedURLs", { urls: ["*nepali_holidays.csv*", "*googletagmanager.com/*", "*gstatic.com/firebasejs/*", "*api.ipify.org/*"] });
+  await command("Network.setBlockedURLs", { urls: ["*nepali_holidays.csv*", "*calendar-2083.csv*", "*googletagmanager.com/*", "*gstatic.com/firebasejs/*", "*api.ipify.org/*"] });
   await command("Page.reload", { ignoreCache: true });
   await waitFor("document.querySelectorAll('.festival-card').length===6 && !document.getElementById('data-note').hidden");
   check(await evaluate("document.getElementById('total-festivals').textContent==='44'"), "offline snapshot works when the CSV is unavailable");
+  await command("Page.removeScriptToEvaluateOnNewDocument", {identifier:fixtureScript.identifier});
+  await command("Network.setBlockedURLs", {urls:["*googletagmanager.com/*","*google-analytics.com/*","*gstatic.com/firebasejs/*","*api.ipify.org/*","*firestore.googleapis.com/*"]});
+  await command("Page.reload", {ignoreCache:true});
+  const liveMetadata=JSON.parse(await readFile("festival-meta.json","utf8"));
+  await waitFor("document.getElementById('total-festivals')?.textContent==='"+liveMetadata.recordCount+"' && document.getElementById('calendar-source')?.hidden===false && !calendarLoading");
+  check(await evaluate("document.getElementById('calendar-source').textContent.includes('Hamro Patro') && document.getElementById('calendar-source').textContent.includes('Dates checked')"), "the production calendar displays its checked source and current record count");
+  await click("#about-calendar");
+  check(await evaluate("document.getElementById('dialog-content').textContent.includes('"+liveMetadata.calendarYear+" BS')"), "the calendar explanation derives its year from the published data");
+  await click("#close-dialog");
+  check(await evaluate("(async()=>{const original=window.fetch,count=document.getElementById('total-festivals').textContent;try{window.fetch=(input,options)=>String(input).includes('nepali_holidays.csv')?Promise.resolve(new Response('Date,Event\\nnot-a-date,incomplete')):original(input,options);await loadFestivalsFromCsv();return document.getElementById('total-festivals').textContent===count && !document.getElementById('data-note').hidden;}finally{window.fetch=original;}})()"), "a malformed live refresh preserves the previously loaded calendar");
   check(exceptions.length===0, "no uncaught JavaScript errors");
   console.log(checks + " browser checks passed. Screenshots: .artifacts/desktop.png and .artifacts/mobile.png");
 } finally {

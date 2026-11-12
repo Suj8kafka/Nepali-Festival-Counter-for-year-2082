@@ -9,6 +9,9 @@
     "test": "node --test tools/festivals.test.cjs tools/visitors.test.cjs",
     "test:browser": "node tools/browser-check.mjs",
     "update:data": "node tools/update-data.cjs",
-    "artwork:render": "node tools/render-landscape.mjs"
+    "artwork:render": "node tools/render-landscape.mjs",
+    "build": "node tools/build-static.cjs",
+    "test:scraper": "python -m unittest discover -s tools -p test_scraper.py -v",
+    "update:calendar": "python py.py"
   }
 }

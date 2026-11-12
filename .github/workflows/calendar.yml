@@ -1,0 +1,73 @@
+﻿name: Refresh festival dates and publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # 19:37 UTC = 01:22 Nepal time the following day; avoid the busy hour boundary.
+    - cron: '37 19 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: festival-calendar-publish
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test the scraper without network access
+        run: python -m unittest discover -s tools -p 'test_scraper.py' -v
+      - name: Refresh and validate Hamro Patro dates
+        if: github.event_name != 'push'
+        run: python py.py
+      - name: Check JavaScript and festival calculations
+        run: |
+          npm run check
+          npm test
+      - name: Save the verified calendar and last-checked timestamp
+        if: github.event_name != 'push'
+        run: |
+          git add -- nepali_holidays.csv festival-data.js festival-meta.json
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'Refresh verified Hamro Patro festival calendar'
+            git push origin HEAD:main
+          fi
+      - name: Prepare public site files
+        run: npm run build
+      - name: Upload the exact verified site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish the refreshed static site
+        id: deployment
+        uses: actions/deploy-pages@v4

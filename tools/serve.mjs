@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(fileURLToPath(new URL("../", import.meta.url)));
 const portIndex = process.argv.indexOf("--port");
 const port = portIndex >= 0 ? Number(process.argv[portIndex + 1]) : 4173;
-const mime = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".csv": "text/csv; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml" };
+const mime = { ".json": "application/json; charset=utf-8", ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".csv": "text/csv; charset=utf-8", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml" };
 const server = http.createServer(async (request, response) => {
   try {
     const url = new URL(request.url, "http://127.0.0.1");

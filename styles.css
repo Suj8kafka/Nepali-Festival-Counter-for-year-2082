@@ -356,3 +356,6 @@ nav { display: flex; gap: 34px; align-items: center; }
   html { scroll-behavior: auto; }
   *, *:before, *:after { animation: none !important; transition: none !important; }
 }
+
+.source-note { margin-top:24px; color:var(--muted); font-size:11px; }
+.source-note a { color:var(--red); text-decoration:underline; text-underline-offset:3px; }

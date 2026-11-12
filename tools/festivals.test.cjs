@@ -4,14 +4,23 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { loadFestivalLogic } = require("./festival-utils.cjs");
 const now = Date.parse("2026-11-12T08:30:00Z");
-const api = loadFestivalLogic(now);
+const fixture = JSON.parse(fs.readFileSync(path.join(__dirname,"fixtures/festivals-2083.json"),"utf8"));
+const api = loadFestivalLogic(now, fixture);
 
-test("the offline snapshot matches every name and date in the current CSV", () => {
-  const records = api.recordsFromCsv(fs.readFileSync(path.join(__dirname, "../nepali_holidays.csv"), "utf8"));
-  assert.equal(records.length, 44);
-  assert.equal(JSON.stringify(records), JSON.stringify(api.festivals.map(({name,date,nepaliDate}) => ({name,date,nepaliDate}))));
-  assert.ok(records.every(record => /2083/.test(record.nepaliDate)));
+test("the live snapshot, CSV, and checked metadata agree", () => {
+  const live = loadFestivalLogic(now);
+  const source = fs.readFileSync(path.join(__dirname,"../nepali_holidays.csv"),"utf8");
+  const records = live.recordsFromCsv(source);
+  live.validateCalendarRecords(records);
+  assert.equal(JSON.stringify(records),JSON.stringify(live.festivals.map(({name,date,nepaliDate})=>({name,date,nepaliDate}))));
+  if (live.metadata.csvSha256) {
+    const crypto = require("node:crypto");
+    assert.equal(crypto.createHash("sha256").update(source.replace(/\r\n/g,"\n")).digest("hex"),live.metadata.csvSha256);
+    assert.equal(records.length,live.metadata.recordCount);
+    assert.equal(JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname,"../festival-meta.json"),"utf8"))),JSON.stringify(live.metadata));
+  }
 });
+
 test("CSV parsing handles quoted newlines, escaped quotes, BOM, and corrected column order", () => {
   const rows = api.parseCsv('\uFEFFDate,Event\r\n"one\nline","say ""hello"""\r\n');
   assert.equal(JSON.stringify(rows), JSON.stringify([["Date","Event"],["one\nline",'say "hello"']]));
@@ -72,4 +81,19 @@ test("calendar export uses exclusive all-day end dates and folds Unicode at 75 b
 });
 test("untrusted CSV text is escaped before it enters HTML", () => {
   assert.equal(api.escapeHtml('<img src=x onerror="alert(1)">'), "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+});
+
+test("countdown components remain exact across second, day, and Nepal midnight boundaries",()=>{
+  const start=api.startOfFestival("2026-11-15");
+  assert.equal(JSON.stringify(api.countdownValues(start,start-(2*86400+3*3600+4*60+5)*1000)),JSON.stringify({days:2,hours:3,minutes:4,seconds:5}));
+  assert.equal(api.countdownValues(start,start-1000).seconds,1);
+  assert.equal(api.countdownValues(start,start-999).seconds,0);
+  assert.equal(JSON.stringify(api.countdownValues(start,start+1000)),JSON.stringify({days:0,hours:0,minutes:0,seconds:0}));
+});
+
+test("an invalid or partial downloaded calendar cannot replace the last good data",()=>{
+  assert.throws(()=>api.validateCalendarRecords([]),/incomplete/i);
+  assert.throws(()=>api.validateCalendarRecords(fixture.slice(0,3)),/incomplete/i);
+  assert.throws(()=>api.validateCalendarRecords(fixture.map((r,i)=>i? r:{...r,date:"2026-02-30"})),/invalid/i);
+  assert.throws(()=>api.validateCalendarRecords([...fixture,fixture[0]]),/duplicate/i);
 });
