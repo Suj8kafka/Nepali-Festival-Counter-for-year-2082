@@ -1,212 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nepali Festival Countdown</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Asimovian&display=swap"
-      rel="stylesheet"/>
-      <link rel="icon" type="image/x-icon" href="favi.png">
-
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-9R3HE5CD1N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-9R3HE5CD1N');
-</script>
-<!-- Firebase App (the core SDK) -->
-<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
-
-<!-- Firestore SDK (compat version) -->
-<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
-
-    <style>
-      body {
-        background-color: #c51c1c;
-        color: #e0e0e0;
-        font-family: "Segoe UI", sans-serif;
-        margin: 0;
-        padding: 20px;
-        overflow-x: hidden; 
-        position: relative;
-      }
-
-      #background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        max-width: 1200px;
-        margin: auto;
-        position: relative;
-        z-index: 1;
-      }
-
-      .card {
-        background-color: #ef3e3e; /* Semi-transparent for 3D background visibility */
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        transition: transform 0.3s ease-in-out, background-color 0.3s;
-      }
-      .name {
-        color: rgb(255, 255, 255);
-      }
-      .card:hover {
-        transform: translateY(-10px) rotate(2deg);
-        background-color: #ef3e3e;
-        box-shadow: 0 8px 0px white;
-        transition: 0.3s ease-in-out;
-      }
-
-      .link {
-        font-size: 50px; /* Larger icons */
-        margin-bottom: 15px;
-        animation: bounce 1.5s infinite;
-      }
-
-      @keyframes bounce {
-        0%,
-        100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-5px);
-        }
-      }
-
-      .name {
-        font-weight: bold;
-        font-size: 1.3em;
-        text-align: center;
-        margin-bottom: 10px;
-      }
-
-      .count {
-        font-size: 1.1em;
-        color: #f2ff00; /* Gold color for countdown */
-        animation: pulse 2s infinite;
-        font-style: italic;
-        font-weight: 900;
-      }
-      /* Style the link container */
-      .link-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 15px; /* Space between link and festival name */
-      }
-
-      /* If you're using image links, style the images */
-      .festival-link {
-        width: 100px; /* You can adjust the size based on your preference */
-        height: 100px;
-        object-fit: contain; /* Prevent stretching of the image */
-        border-radius: 50%; /* Optional: to give a circular shape */
-      }
-
-      /* If using text links (as text-based links, e.g., URLs), style them */
-      .festival-link {
-        font-size: 20px; /* Adjust font size for readability */
-        color: inherit; /* Make sure the text color matches the card */
-        text-decoration: none; /* Remove underline from text link */
-      }
-
-      .site-header {
-        text-align: center; /* Center the logo horizontally */
-        padding-bottom: 40px; /* Add bottom padding below the header */
-        padding-top: 20px; /* Optional: top padding for breathing room */
-      }
-
-      .logo {
-        max-width: 550px; /* Control logo size */
-        height: auto;
-      }
-      .counter {
-        font-family: "Asimovian", sans-serif;
-        font-weight: 600;
-        font-style: italic;
-        font-size: 17px;
-        letter-spacing: 0.05em;
-      }
-      .global{ 
-        font-family: "Asimovian", sans-serif;
-        font-weight: 600;
-        font-style: italic;
-        font-size: 17px;
-        
-      }
-
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        50% {
-          transform: scale(1.05);
-          opacity: 0.8;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-      }
-
-      .passed {
-        color: #888;
-        animation: none;
-      }
-    #totalVisits{ 
-      font-size: 1.5em;
-      color: #00fff2; /* Gold color for total visits */
-      font-weight: bold;
-    }
-
-      @media (max-width: 768px) {
-        .grid {
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
-        .logo {
-          display: block;
-          max-width: 100%;
-          height: auto;
-          margin: 0 auto;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="background"></div>
-    <header class="site-header">
-      <img src="Group 41.png" alt="Site Logo" class="logo" />
-      <p class="counter">
-        You have visited this page <span id="visitCount">0</span> times.
-      </p>
-      <p class="global"> Web has been visited <strong><span id="totalVisits">Loading...</span></strong> times in total.</p>
-    </header>
-
-    <div class="grid" id="festivals"></div>
-
-    <!-- <script src="config.js"></script> -->
-    <script src="script.js"></script>
-   
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#c8dce7" />
+  <meta name="description" content="Nepal's next celebration is on the horizon. Live festival countdowns, upcoming dates, and past celebrations, in Nepal time." />
+  <title>Utsav — Nepal, one celebration at a time</title>
+  <link rel="icon" type="image/png" href="favi.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="festival-data.js" defer></script>
+  <script src="script.js" defer></script>
+  <script src="parallax.js" defer></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9R3HE5CD1N"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-9R3HE5CD1N');</script>
+</head>
+<body>
+  <a class="skip-link" href="#festivals-section">Skip to festivals</a>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-flower" viewBox="0 0 40 40"><circle cx="20" cy="20" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M20 1v9m0 20v9M1 20h9m20 0h9M6.6 6.6l6.3 6.3m14.2 14.2 6.3 6.3M6.6 33.4l6.3-6.3m14.2-14.2 6.3-6.3" fill="none" stroke="currentColor" stroke-width="1.5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="1"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2m-8 3h2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></symbol>
+  </svg>
+  <main>
+    <section class="hero-scene" id="home" aria-labelledby="landscape-title">
+      <div class="landscape" aria-hidden="true">
+        <div class="sun-halo" data-depth=".94"></div>
+        <img class="landscape-layer atmosphere" data-depth=".88" src="assets/landscape/atmosphere.svg" alt="" width="1600" height="1000" decoding="async" />
+        <div class="landscape-title" data-depth=".66"><p>A LAND OF LIVING TRADITIONS</p><h1 id="landscape-title">NEPAL</h1></div>
+        <img class="landscape-layer mountains" data-depth=".80" src="assets/landscape/himalayas.svg" alt="" width="1600" height="1000" fetchpriority="high" decoding="async" />
+        <img class="landscape-layer distant-hills" data-depth=".64" src="assets/landscape/distant-hills.svg" alt="" width="1600" height="1000" decoding="async" />
+        <img class="landscape-layer near-hills" data-depth=".035" src="assets/landscape/near-hills.svg" alt="" width="1600" height="1000" decoding="async" />
+      </div>
+      <div class="settlement" aria-hidden="true">
+        <img class="landscape-layer valley" src="assets/landscape/valley.svg" alt="" width="1600" height="1000" decoding="async" />
+        <img class="landscape-layer city" src="assets/landscape/kathmandu.svg" alt="" width="1600" height="1000" decoding="async" />
+        <img class="landscape-layer mobile-city" src="assets/landscape/kathmandu-mobile.svg" alt="" width="600" height="1000" decoding="async" />
+        <img class="landscape-layer foreground" src="assets/landscape/foreground.svg" alt="" width="1600" height="1000" decoding="async" />
+        <img class="landscape-layer mobile-foreground" src="assets/landscape/foreground-mobile.svg" alt="" width="600" height="1000" decoding="async" />
+      </div>
+      <header class="site-header container">
+        <a class="brand" href="#home" aria-label="Utsav home"><svg class="brand-mark"><use href="#i-flower"/></svg><span>utsav.</span></a>
+        <nav aria-label="Main navigation"><a class="nav-link active" href="#festivals-section" id="nav-festivals">Upcoming</a><a class="nav-link" href="#festivals-section" id="nav-past">Past festivals</a><a class="nav-link" href="#festivals-section" id="nav-calendar">Calendar <svg class="icon"><use href="#i-arrow"/></svg></a></nav>
+        <div class="header-meta"><span class="live-dot"></span><span>Nepal <time id="nepal-clock">—</time></span><span class="header-year"><span data-bs-year>2083</span> BS</span></div>
+      </header>
+      <div class="scene-footer container"><p class="scene-location">KATHMANDU VALLEY, NEPAL<span>Looking north. Rooted here.</span></p><a class="scroll-cue" href="#featured"><span>THE NEXT CELEBRATION</span><svg class="icon"><use href="#i-arrow"/></svg></a><p class="scene-edition">A YEAR OF CELEBRATIONS<span><span data-bs-year>2083</span> BIKRAM SAMBAT</span></p></div>
+      <button class="motion-toggle" id="motion-toggle" aria-pressed="false" aria-label="Pause landscape motion"><span class="pause-mark" aria-hidden="true">Ⅱ</span><span id="motion-label">Pause motion</span></button>
+    </section>
+    <div class="festival-content">
+    <section class="featured" id="featured" aria-labelledby="featured-name">
+      <div class="featured-inner container">
+        <div class="featured-copy">
+          <p class="eyebrow featured-eyebrow"><span class="live-dot"></span><span id="featured-label">THE NEXT CELEBRATION</span></p>
+          <h2 id="featured-name">A festival on the horizon.</h2>
+          <p class="featured-native" id="featured-native" lang="ne">&#x091B;&#x0920; &#x092A;&#x0930;&#x094D;&#x0935;</p>
+          <p class="featured-date"><span id="featured-nepali-date"></span><span class="date-divider">/</span><span id="featured-date">Loading festival dates...</span></p>
+          <div class="feature-actions"><button class="button button-primary" id="featured-save"><svg class="icon"><use href="#i-calendar"/></svg> Save the date</button><button class="text-button" id="featured-details">About this festival <svg class="icon"><use href="#i-arrow"/></svg></button></div>
+        </div>
+        <div class="countdown-side">
+          <p class="eyebrow countdown-heading">UNTIL WE CELEBRATE</p>
+          <div class="countdown" id="hero-countdown" role="timer" aria-label="Time until the next festival"><div><strong id="count-days">00</strong><span>DAYS</span></div><b>:</b><div><strong id="count-hours">00</strong><span>HOURS</span></div><b>:</b><div><strong id="count-minutes">00</strong><span>MINUTES</span></div><b>:</b><div><strong id="count-seconds">00</strong><span>SECONDS</span></div></div>
+          <p class="countdown-note" id="countdown-note">Counting down to midnight in Nepal.</p>
+        </div>
+      </div>
+    </section>
+    <div class="year-band"><div class="container year-overview" aria-label="Festival year overview"><p class="year-message">Our traditions.<br />All year round.</p><div><strong id="total-festivals">44</strong><span>DATES THIS YEAR</span></div><div><strong id="remaining-festivals">—</strong><span>STILL TO COME</span></div><div class="overview-total-visits"><strong id="totalVisits" data-total-visits role="status" aria-live="polite">Loading…</strong><span>TOTAL VISITS</span></div><span id="year-range" class="sr-only">2026 — 2027</span></div></div>
+    <section class="festival-section container" id="festivals-section" aria-labelledby="festival-heading">
+      <div class="section-heading"><div><p class="eyebrow">THE NEPALI FESTIVAL CALENDAR · <span data-bs-year>2083</span> BS</p><h2 id="festival-heading">A year of celebrations.</h2><p class="section-description">What’s coming up, and the moments we’ve celebrated.</p></div><button class="text-button export-button" id="export-calendar"><svg class="icon"><use href="#i-download"/></svg> Download calendar</button></div>
+      <div class="festival-toolbar"><div class="filter-tabs" role="group" aria-label="Festival status"><button class="filter-tab selected" data-status="upcoming" aria-pressed="true">Upcoming <span id="upcoming-count">—</span></button><button class="filter-tab" data-status="past" aria-pressed="false">Past festivals <span id="past-count">—</span></button><button class="filter-tab" data-status="all" aria-pressed="false">All dates</button></div><div class="toolbar-tools"><label class="search-box"><svg class="icon"><use href="#i-search"/></svg><input type="search" id="festival-search" placeholder="Find a festival" aria-label="Search festivals" /></label><div class="view-toggle" role="group" aria-label="Festival view"><button class="selected" id="grid-view-button" aria-label="List view" aria-pressed="true"><svg class="icon"><use href="#i-grid"/></svg></button><button id="calendar-view-button" aria-label="Calendar view" aria-pressed="false"><svg class="icon"><use href="#i-calendar"/></svg></button></div></div></div>
+      <div class="month-row"><div class="month-filters" id="month-filters" role="group" aria-label="Filter by Nepali month"><button class="month-button selected" data-month="all" aria-pressed="true">All months</button></div><span class="result-count" id="result-count" role="status" aria-live="polite"></span></div>
+      <div class="list-labels" aria-hidden="true"><span>DATE</span><span>FESTIVAL / OBSERVANCE</span><span>THE COUNTDOWN</span></div>
+      <div class="festival-grid" id="festivals" aria-label="Festivals"><p class="loading-message">Loading the festival calendar…</p></div>
+      <div class="calendar-panel" id="calendar-panel" hidden><div class="calendar-heading"><button class="icon-button" id="previous-month" aria-label="Previous month"><svg class="icon flip"><use href="#i-chevron"/></svg></button><div><h3 id="calendar-month"></h3><p>Gregorian dates · Nepal time</p></div><button class="icon-button" id="next-month" aria-label="Next month"><svg class="icon"><use href="#i-chevron"/></svg></button></div><div class="calendar-weekdays" aria-hidden="true"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="calendar-grid" id="calendar-grid"></div></div>
+      <div class="empty-state" id="empty-state" hidden><svg class="icon"><use href="#i-search"/></svg><h3>No festivals found</h3><p>Try another name or month.</p><button class="button button-outline" id="reset-filters">Reset filters</button></div>
+      <div class="load-more-row" id="load-more-row" hidden><button class="button button-outline" id="load-more">More festivals <svg class="icon"><use href="#i-arrow"/></svg></button><span id="shown-count"></span></div><p class="data-note" id="data-note" hidden></p>
+      <div class="calendar-footnote"><span><span class="live-dot"></span> Countdown to midnight, Nepal time (UTC +5:45).</span><button class="text-button" id="about-calendar">About the dates <svg class="icon"><use href="#i-arrow"/></svg></button></div>
+    </section>
+    </div>
+  </main>
+  <footer class="site-footer"><div class="container footer-top"><div><a class="brand" href="#home" aria-label="Utsav home"><svg class="brand-mark"><use href="#i-flower"/></svg><span>utsav.</span></a><p>From the hills to home.</p></div><p class="footer-native" lang="ne">हरेक पर्व, आफ्नै उत्सव।</p><a href="archive/index.html" id="archive-link">Archived</a></div><div class="container footer-bottom"><span>Made in Nepal <svg class="icon heart"><use href="#i-heart"/></svg></span><span><span data-bs-year>2083</span> BS · A calendar of our celebrations.</span><span>Your visits <strong id="visitCount">1</strong> · Total <span data-total-visits>Loading…</span></span></div></footer>
+  <dialog id="festival-dialog" class="festival-dialog" aria-labelledby="dialog-title"><button class="dialog-close icon-button" id="close-dialog" aria-label="Close festival details"><svg class="icon"><use href="#i-close"/></svg></button><div id="dialog-content"></div></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><div class="noscript-note">Enable JavaScript for live countdowns and festival filters. You can also <a href="nepali_holidays.csv">download the festival dates</a>.</div></noscript>
+  <script src="visitors.js" defer></script>
+</body>
 </html>

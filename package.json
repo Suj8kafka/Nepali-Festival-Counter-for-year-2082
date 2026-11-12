@@ -1,0 +1,14 @@
+{
+  "name": "utsav-nepali-festivals",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A buildless Nepali festival countdown and calendar.",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "check": "node --check script.js && node --check parallax.js && node --check visitors.js && node --check festival-data.js && node --check archive/script.js",
+    "test": "node --test tools/festivals.test.cjs tools/visitors.test.cjs",
+    "test:browser": "node tools/browser-check.mjs",
+    "update:data": "node tools/update-data.cjs",
+    "artwork:render": "node tools/render-landscape.mjs"
+  }
+}
