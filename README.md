@@ -33,7 +33,7 @@ Open **http://127.0.0.1:4173**. You can also open index.html directly; it uses t
 The GitHub Actions workflow in [.github/workflows/calendar.yml](.github/workflows/calendar.yml) runs daily at **19:37 UTC / 01:22 Nepal time** and can also be run from the repository's Actions tab. It:
 
 1. Runs the scraper regression tests.
-2. Fetches Hamro Patro's English public holidays page and checks the next-year page.
+2. Fetches the public JSON navigation data used by Hamro Patro's English holidays client and checks the next-year page.
 3. Validates Gregorian dates, weekdays, Nepali year/month/day fields, complete-year coverage, and unexpected data loss.
 4. Updates nepali_holidays.csv, festival-data.js, and festival-meta.json together.
 5. Runs the JavaScript/date tests and commits the verified data and last-checked timestamp.

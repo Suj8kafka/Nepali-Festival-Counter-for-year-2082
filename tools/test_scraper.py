@@ -50,6 +50,9 @@ class ScraperTests(unittest.TestCase):
         self.assertEqual(calendar.records, FIXTURE)
         scraper.validate_calendar(calendar)
 
+    def test_public_json_navigation_has_the_same_validated_dates(self):
+        self.assertEqual(scraper.parse_page(json.dumps(payload())).records,FIXTURE)
+
     def test_missing_or_changed_source_format_fails_closed(self):
         for page in ('<table><tr><td>Unknown format</td></tr></table>', '<script id="hp-bootstrap">invalid JSON</script>'):
             with self.assertRaises(scraper.CalendarError):

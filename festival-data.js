@@ -2,7 +2,7 @@
 window.FESTIVAL_META = {
   "source": "Hamro Patro",
   "sourceUrl": "https://www.hamropatro.com/en/nepali-public-holidays",
-  "checkedAt": "2026-11-12T14:14:32Z",
+  "checkedAt": "2026-11-12T14:30:18Z",
   "calendarYear": 2083,
   "years": [
     2083

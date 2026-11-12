@@ -8,8 +8,6 @@ import io
 import json
 import os
 import re
-import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -78,10 +76,11 @@ def parse_ad_date(label):
 def parse_page(html, expected_year=None):
     parser = BootstrapParser()
     parser.feed(html)
-    if not parser.parts:
+    content = html if html.lstrip().startswith("{") else "".join(parser.parts)
+    if not content:
         raise CalendarError("Hamro Patro holiday data was not found; its page format may have changed.")
     try:
-        payload = json.loads("".join(parser.parts))
+        payload = json.loads(content)
         if payload.get("page") != "holidays" or payload.get("locale") != "en":
             raise CalendarError("The source is not the English holidays page.")
         data = payload["data"]
@@ -141,35 +140,19 @@ def validate_calendar(calendar, previous=()):
     return calendar
 
 
-def curl_page(url):
-    """Use the runner's standard HTTP client when the publisher rejects urllib."""
-    executable = shutil.which("curl")
-    if not executable:
-        raise CalendarError("Source rejected the Python HTTP client and curl is unavailable.")
-    response = subprocess.run([executable, "--location", "--silent", "--show-error", "--fail-with-body", "--max-time", "25", "--max-filesize", "3000000", "--header", "Accept: text/html", url], capture_output=True, timeout=30)
-    if response.returncode:
-        message = re.sub(r"<[^>]+>", " ", response.stdout[:1000].decode("utf-8", "replace"))
-        message = " ".join(message.split())[:250]
-        raise CalendarError(f"Source HTTP client failed ({response.returncode}): {message}")
-    if len(response.stdout) > 3_000_000:
-        raise CalendarError("Source page exceeds the expected size.")
-    return response.stdout.decode("utf-8")
-
-
 def fetch_page(url):
     for attempt in range(3):
         try:
-            request = Request(url, headers={"User-Agent": "Utsav-Festival-Calendar/1.0", "Accept": "text/html"})
+            # This is the public JSON navigation request used by Hamro Patro's own client.
+            request = Request(url + "?_rsc", headers={"User-Agent": "Utsav-Festival-Calendar/1.0", "Accept": "application/json", "RSC": "1"})
             with urlopen(request, timeout=20) as response:
-                if "text/html" not in response.headers.get("Content-Type", ""):
-                    raise CalendarError("The source did not return HTML.")
+                if "application/json" not in response.headers.get("Content-Type", ""):
+                    raise CalendarError("The source did not return public calendar JSON.")
                 content = response.read(3_000_001)
                 if len(content) > 3_000_000:
                     raise CalendarError("Source page exceeds the expected size.")
                 return content.decode("utf-8")
         except HTTPError as error:
-            if error.code == 403:
-                return curl_page(url)
             if error.code not in (408, 429, 500, 502, 503, 504) or attempt == 2:
                 raise CalendarError(f"Source request failed: HTTP {error.code}") from error
         except (URLError, TimeoutError, OSError) as error:
