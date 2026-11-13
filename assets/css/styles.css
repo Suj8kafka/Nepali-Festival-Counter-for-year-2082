@@ -198,6 +198,8 @@ nav { display: flex; gap: 34px; align-items: center; }
 .footer-top .brand { font-size: 31px; }
 .footer-top .brand-mark { width: 27px; height: 27px; }
 .footer-top p:not(.footer-native) { color: var(--muted); font-size: 11px; margin-top: 12px; }
+.footer-credit a { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.footer-credit a:hover { color: var(--red); }
 .footer-native { color: #786154; font-size: 16px; }
 .footer-top > a { font-size: 12px; display: flex; align-items: center; gap: 12px; }
 .footer-bottom { display: flex; justify-content: space-between; gap: 20px; padding-block: 20px; border-top: 1px solid #d1bfae; color: #73635f; font-size: 10px; }

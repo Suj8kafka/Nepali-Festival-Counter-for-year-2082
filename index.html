@@ -5,15 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#c8dce7" />
   <meta name="description" content="Nepal's next celebration is on the horizon. Live festival countdowns, upcoming dates, and past celebrations, in Nepal time." />
+  <meta name="author" content="Sujeet Khadka" />
   <title>Utsav — Nepal, one celebration at a time</title>
-  <link rel="icon" type="image/png" href="favi.png" />
+  <link rel="author" href="https://www.sujeetkhadka.com.np/" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Utsav — Nepali Festival Countdown",
+      "description": "Live Nepali festival countdowns, upcoming dates, and past celebrations, in Nepal time.",
+      "inLanguage": ["en", "ne"],
+      "creator": {
+        "@type": "Person",
+        "name": "Sujeet Khadka",
+        "url": "https://www.sujeetkhadka.com.np/"
+      }
+    }
+  </script>
+  <link rel="icon" type="image/png" href="assets/images/favi.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <script src="festival-data.js" defer></script>
-  <script src="script.js" defer></script>
-  <script src="parallax.js" defer></script>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="data/festival-data.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/parallax.js" defer></script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-9R3HE5CD1N"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-9R3HE5CD1N');</script>
 </head>
@@ -87,10 +103,21 @@
     </section>
     </div>
   </main>
-  <footer class="site-footer"><div class="container footer-top"><div><a class="brand" href="#home" aria-label="Utsav home"><svg class="brand-mark"><use href="#i-flower"/></svg><span>utsav.</span></a><p>From the hills to home.</p></div><p class="footer-native" lang="ne">हरेक पर्व, आफ्नै उत्सव।</p><a href="archive/index.html" id="archive-link">Archived</a></div><div class="container footer-bottom"><span>Made in Nepal <svg class="icon heart"><use href="#i-heart"/></svg></span><span><span data-bs-year>2083</span> BS · A calendar of our celebrations.</span><span>Your visits <strong id="visitCount">1</strong> · Total <span data-total-visits>Loading…</span></span></div></footer>
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div>
+        <a class="brand" href="#home" aria-label="Utsav home"><svg class="brand-mark"><use href="#i-flower"/></svg><span>utsav.</span></a>
+        <p>From the hills to home.</p>
+        <p class="footer-credit">Created by <a href="https://www.sujeetkhadka.com.np/" rel="author">Sujeet Khadka</a></p>
+      </div>
+      <p class="footer-native" lang="ne">हरेक पर्व, आफ्नै उत्सव।</p>
+      <a href="archive/index.html" id="archive-link">Archived</a>
+    </div>
+    <div class="container footer-bottom"><span>Made in Nepal <svg class="icon heart"><use href="#i-heart"/></svg></span><span><span data-bs-year>2083</span> BS · A calendar of our celebrations.</span><span>Your visits <strong id="visitCount">1</strong> · Total <span data-total-visits>Loading…</span></span></div>
+  </footer>
   <dialog id="festival-dialog" class="festival-dialog" aria-labelledby="dialog-title"><button class="dialog-close icon-button" id="close-dialog" aria-label="Close festival details"><svg class="icon"><use href="#i-close"/></svg></button><div id="dialog-content"></div></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-  <noscript><div class="noscript-note">Enable JavaScript for live countdowns and festival filters. You can also <a href="nepali_holidays.csv">download the festival dates</a>.</div></noscript>
-  <script src="visitors.js" defer></script>
+  <noscript><div class="noscript-note">Enable JavaScript for live countdowns and festival filters. You can also <a href="data/nepali_holidays.csv">download the festival dates</a>.</div></noscript>
+  <script src="assets/js/visitors.js" defer></script>
 </body>
 </html>

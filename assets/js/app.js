@@ -13,16 +13,16 @@ const dateFormat = new Intl.DateTimeFormat("en-GB", { timeZone: NEPAL_ZONE, day:
 const longDateFormat = new Intl.DateTimeFormat("en-GB", { timeZone: NEPAL_ZONE, weekday: "long", day: "numeric", month: "long", year: "numeric" });
 
 const CATALOG = [
-  { match: /Chhath/i, title: "Chhath Parva", native: "छठ पर्व", image: "assets/chhath.jpg", alt: "An offering to the setting sun during Chhath", category: "TRADITION & TOGETHERNESS", art: "sun", description: "A moment of gratitude, golden skies, and families gathered by the water.", note: "Gratitude, devotion, and the golden sun." },
+  { match: /Chhath/i, title: "Chhath Parva", native: "छठ पर्व", image: "assets/images/chhath.jpg", alt: "An offering to the setting sun during Chhath", category: "TRADITION & TOGETHERNESS", art: "sun", description: "A moment of gratitude, golden skies, and families gathered by the water.", note: "Gratitude, devotion, and the golden sun." },
   { match: /Guru Nanak/i, title: "Guru Nanak Jayanti", native: "गुरु नानक जयन्ती", category: "FAITH & REFLECTION", art: "sun", description: "A day for kindness, reflection, and a shared sense of togetherness." },
   { match: /Yomari/i, title: "Yomari Punhi", native: "योमरी पुन्हि", category: "CULTURE & COMMUNITY", art: "food", description: "Familiar flavors, shared tables, and traditions passed from one generation to the next." },
   { match: /^Udhauli/i, title: "Udhauli Parva", native: "उधौली पर्व", category: "CULTURE & COMMUNITY", art: "community", description: "A celebration of belonging, community, and our connection to the land." },
   { match: /Christmas/i, title: "Christmas Day", native: "क्रिसमस", category: "JOY & TOGETHERNESS", art: "snow", description: "Warm wishes, bright lights, and time with the people who feel like home." },
-  { match: /^Tamu/i, title: "Tamu Lhosar", native: "तमु ल्होसार", image: "assets/boudhanath.jpg", alt: "Prayer flags around Boudhanath Stupa", category: "NEW BEGINNINGS", art: "snow", description: "A fresh beginning, a familiar gathering, and another year of possibilities." },
+  { match: /^Tamu/i, title: "Tamu Lhosar", native: "तमु ल्होसार", image: "assets/images/boudhanath.jpg", alt: "Prayer flags around Boudhanath Stupa", category: "NEW BEGINNINGS", art: "snow", description: "A fresh beginning, a familiar gathering, and another year of possibilities." },
   { match: /^Sonam/i, title: "Sonam Lhochhar", native: "सोनाम ल्होछार", category: "NEW BEGINNINGS", art: "snow", description: "Welcoming a new year with community, color, and a little extra joy." },
   { match: /^Gyalpo/i, title: "Gyalpo Lhosar", native: "ग्याल्पो ल्होसार", category: "NEW BEGINNINGS", art: "snow", description: "A celebration of new beginnings and the traditions that bring us together." },
   { match: /Disabled Persons/i, title: "International Day of Persons with Disabilities", category: "COMMUNITY & AWARENESS", art: "community", description: "A reminder to build a more welcoming, accessible world for everyone." },
-  { match: /^Buddha/i, title: "Buddha Jayanti", native: "बुद्ध जयन्ती", image: "assets/boudhanath.jpg", alt: "Boudhanath Stupa beneath colorful prayer flags", category: "FAITH & REFLECTION", art: "sun", description: "A moment to slow down, reflect, and make space for peace and compassion." },
+  { match: /^Buddha/i, title: "Buddha Jayanti", native: "बुद्ध जयन्ती", image: "assets/images/boudhanath.jpg", alt: "Boudhanath Stupa beneath colorful prayer flags", category: "FAITH & REFLECTION", art: "sun", description: "A moment to slow down, reflect, and make space for peace and compassion." },
   { match: /^Mesh|Nepali New Year/i, title: "Nepali New Year", native: "नेपाली नयाँ वर्ष", category: "NEW BEGINNINGS", art: "colors", description: "New hopes, fresh beginnings, and a whole year of celebrations ahead." },
   { match: /^Bakar/i, title: "Bakar Eid", native: "बकर इद", category: "FAITH & FAMILY", art: "community", description: "A time to gather, share, and celebrate the bonds that connect us." },
   { match: /^Republic/i, title: "Republic Day", native: "गणतन्त्र दिवस", category: "NATIONAL OBSERVANCE", art: "colors", description: "A day to reflect on our shared journey and the country we call home." },
@@ -32,7 +32,7 @@ const CATALOG = [
   { match: /^Shree Krishna/i, title: "Krishna Janmashtami", native: "कृष्ण जन्माष्टमी", category: "FAITH & DEVOTION", art: "sun", description: "A day of devotion, familiar melodies, and celebrations close to the heart." },
   { match: /^Haritalika/i, title: "Haritalika Teej", native: "हरितालिका तीज", category: "CULTURE & CONNECTION", art: "colors", description: "Songs, color, and the joy of gathering with the people who know you best." },
   { match: /^Sambidhan/i, title: "Constitution Day", native: "संविधान दिवस", category: "NATIONAL OBSERVANCE", art: "community", description: "A moment to reflect on our country and the future we share." },
-  { match: /^Indra/i, title: "Indra Jatra", native: "इन्द्र जात्रा", image: "assets/indra-jatra.jpg", alt: "Indra Jatra celebrations in Kathmandu", category: "CULTURE & COMMUNITY", art: "colors", description: "The streets come alive with the energy of a tradition shared across generations." },
+  { match: /^Indra/i, title: "Indra Jatra", native: "इन्द्र जात्रा", image: "assets/images/indra-jatra.jpg", alt: "Indra Jatra celebrations in Kathmandu", category: "CULTURE & COMMUNITY", art: "colors", description: "The streets come alive with the energy of a tradition shared across generations." },
   { match: /Jitiya/i, title: "Jitiya Parva", native: "जितिया पर्व", category: "FAITH & FAMILY", art: "lights", description: "A celebration of care, devotion, and the strength of family bonds." },
   { match: /^Ghatasth/i, title: "Ghatasthapana", native: "घटस्थापना", category: "DASHAIN", art: "community", description: "The anticipation begins. A season of family, familiar rituals, and coming home." },
   { match: /^Fulpati/i, title: "Fulpati", native: "फूलपाती", category: "DASHAIN", art: "community", description: "Festive days, familiar faces, and the growing warmth of Dashain." },
@@ -52,8 +52,8 @@ const CATALOG = [
   { match: /^Prajatantra/i, title: "Democracy Day", native: "प्रजातन्त्र दिवस", category: "NATIONAL OBSERVANCE", art: "community", description: "Remembering a shared journey and looking toward the future together." },
   { match: /^Maha.?Shivaratri/i, title: "Maha Shivaratri", native: "महाशिवरात्रि", category: "FAITH & DEVOTION", art: "lights", description: "An evening of devotion and the quiet glow of a tradition held close." },
   { match: /Women.s Day/i, title: "International Women’s Day", category: "COMMUNITY & AWARENESS", art: "colors", description: "Celebrating the women who shape our communities, our stories, and our future." },
-  { match: /^Fagu Poornima \(Terai\)/i, title: "Holi in the Terai", native: "तराईमा होली", image: "assets/holi.jpg", alt: "People celebrating Holi with colorful powder", category: "FESTIVAL OF COLORS", art: "colors", description: "Another day to fill the air with color and make memories together." },
-  { match: /^Fagu/i, title: "Holi", native: "होली", image: "assets/holi.jpg", alt: "A joyful Holi celebration in Nepal", category: "FESTIVAL OF COLORS", art: "colors", description: "A splash of color, a familiar smile, and a whole lot of joy." },
+  { match: /^Fagu Poornima \(Terai\)/i, title: "Holi in the Terai", native: "तराईमा होली", image: "assets/images/holi.jpg", alt: "People celebrating Holi with colorful powder", category: "FESTIVAL OF COLORS", art: "colors", description: "Another day to fill the air with color and make memories together." },
+  { match: /^Fagu/i, title: "Holi", native: "होली", image: "assets/images/holi.jpg", alt: "A joyful Holi celebration in Nepal", category: "FESTIVAL OF COLORS", art: "colors", description: "A splash of color, a familiar smile, and a whole lot of joy." },
   { match: /^Ghode/i, title: "Ghode Jatra", native: "घोडे जात्रा", category: "CULTURE & COMMUNITY", art: "colors", description: "A day to enjoy the energy and living traditions of the Kathmandu Valley." }
 ];
 
@@ -344,7 +344,7 @@ function showFestival(id) {
 function showAboutCalendar() {
   const years = [...new Set(festivals.map(festival=>festival.nepaliDate.match(/20\d\d/)?.[0]).filter(Boolean))].join(" / ");
   const gregorian = festivals[0].date.slice(0,4) + "-" + festivals.at(-1).date.slice(0,4);
-  $("dialog-content").innerHTML = '<div class="dialog-copy dialog-info-copy"><p class="eyebrow">A LITTLE ABOUT UTSAV</p><h2 id="dialog-title">A calendar to keep us connected.</h2><p>Utsav brings together the festival dates in this project’s Nepali holiday calendar. The current edition covers ' + escapeHtml(years) + ' BS (' + escapeHtml(gregorian) + '), including cultural celebrations and national observances.</p><p>Countdowns begin at midnight in Nepal (Asia/Kathmandu, UTC +5:45). A festival is marked as “Celebrating today” for the full day in Nepal, wherever you’re visiting from.</p><p>Save the date downloads an all-day .ics event for your calendar app. Download calendar includes every date in this edition.</p><p>Dates come from the project’s <a href="nepali_holidays.csv" download>festival CSV</a>. Observance dates and local practices can vary; check local announcements when planning.</p><p class="photo-credits">Photography: <a href="https://www.bittiyapost.com/news/2025/10/27/19760" target="_blank" rel="noopener noreferrer">Chhath · Bittiya Post</a>; <a href="https://nepaltraveller.com/sidetrack/7-little-known-facts-about-buddhist-prayer-flags" target="_blank" rel="noopener noreferrer">Boudhanath · Nepal Traveller</a>; Holi · The Himalayan Times; Indra Jatra · Above the Himalaya.</p></div>';
+  $("dialog-content").innerHTML = '<div class="dialog-copy dialog-info-copy"><p class="eyebrow">A LITTLE ABOUT UTSAV</p><h2 id="dialog-title">A calendar to keep us connected.</h2><p>Utsav brings together the festival dates in this project’s Nepali holiday calendar. The current edition covers ' + escapeHtml(years) + ' BS (' + escapeHtml(gregorian) + '), including cultural celebrations and national observances.</p><p>Countdowns begin at midnight in Nepal (Asia/Kathmandu, UTC +5:45). A festival is marked as “Celebrating today” for the full day in Nepal, wherever you’re visiting from.</p><p>Save the date downloads an all-day .ics event for your calendar app. Download calendar includes every date in this edition.</p><p>Dates come from the project’s <a href="data/nepali_holidays.csv" download>festival CSV</a>. Observance dates and local practices can vary; check local announcements when planning.</p><p class="photo-credits">Photography: <a href="https://www.bittiyapost.com/news/2025/10/27/19760" target="_blank" rel="noopener noreferrer">Chhath · Bittiya Post</a>; <a href="https://nepaltraveller.com/sidetrack/7-little-known-facts-about-buddhist-prayer-flags" target="_blank" rel="noopener noreferrer">Boudhanath · Nepal Traveller</a>; Holi · The Himalayan Times; Indra Jatra · Above the Himalaya.</p></div>';
   $("festival-dialog").showModal();
 }
 
@@ -461,8 +461,8 @@ async function loadFestivalsFromCsv() {
   lastCalendarCheck = Date.now();
   try {
     const [response, metadataResponse] = await Promise.all([
-      fetch("nepali_holidays.csv", {cache:"no-store", signal:AbortSignal.timeout(8_000)}),
-      fetch("festival-meta.json", {cache:"no-store", signal:AbortSignal.timeout(8_000)}).catch(()=>null),
+      fetch("data/nepali_holidays.csv", {cache:"no-store", signal:AbortSignal.timeout(8_000)}),
+      fetch("data/festival-meta.json", {cache:"no-store", signal:AbortSignal.timeout(8_000)}).catch(()=>null),
     ]);
     if (!response.ok) throw new Error("Festival CSV unavailable.");
     const records = validateCalendarRecords(recordsFromCsv(await response.text()));

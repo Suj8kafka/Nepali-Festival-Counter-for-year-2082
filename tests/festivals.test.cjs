@@ -2,14 +2,14 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { loadFestivalLogic } = require("./festival-utils.cjs");
+const { loadFestivalLogic } = require("../tools/festival-utils.cjs");
 const now = Date.parse("2026-11-12T08:30:00Z");
 const fixture = JSON.parse(fs.readFileSync(path.join(__dirname,"fixtures/festivals-2083.json"),"utf8"));
 const api = loadFestivalLogic(now, fixture);
 
 test("the live snapshot, CSV, and checked metadata agree", () => {
   const live = loadFestivalLogic(now);
-  const source = fs.readFileSync(path.join(__dirname,"../nepali_holidays.csv"),"utf8");
+  const source = fs.readFileSync(path.join(__dirname,"../data/nepali_holidays.csv"),"utf8");
   const records = live.recordsFromCsv(source);
   live.validateCalendarRecords(records);
   assert.equal(JSON.stringify(records),JSON.stringify(live.festivals.map(({name,date,nepaliDate})=>({name,date,nepaliDate}))));
@@ -17,7 +17,7 @@ test("the live snapshot, CSV, and checked metadata agree", () => {
     const crypto = require("node:crypto");
     assert.equal(crypto.createHash("sha256").update(source.replace(/\r\n/g,"\n")).digest("hex"),live.metadata.csvSha256);
     assert.equal(records.length,live.metadata.recordCount);
-    assert.equal(JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname,"../festival-meta.json"),"utf8"))),JSON.stringify(live.metadata));
+    assert.equal(JSON.stringify(JSON.parse(fs.readFileSync(path.join(__dirname,"../data/festival-meta.json"),"utf8"))),JSON.stringify(live.metadata));
   }
 });
 
@@ -48,8 +48,8 @@ test("festivals start at Nepal midnight and remain today for the full local day"
 });
 test("festival metadata follows the name when CSV rows move", () => {
   const reversed = api.enrich([{name:"Chhath Parva",date:"2026-11-15",nepaliDate:"29 Kartik 2083"},{name:"Buddha Jayanti",date:"2026-05-01",nepaliDate:"18 Baishakh 2083"}].reverse());
-  assert.equal(reversed.find(item=>item.title==="Chhath Parva").image, "assets/chhath.jpg");
-  assert.equal(reversed.find(item=>item.title==="Buddha Jayanti").image, "assets/boudhanath.jpg");
+  assert.equal(reversed.find(item=>item.title==="Chhath Parva").image, "assets/images/chhath.jpg");
+  assert.equal(reversed.find(item=>item.title==="Buddha Jayanti").image, "assets/images/boudhanath.jpg");
 });
 test("filters combine status, Nepali month, and secondary observance search", () => {
   api.state.status = "upcoming"; api.state.month = "all"; api.state.search = "";

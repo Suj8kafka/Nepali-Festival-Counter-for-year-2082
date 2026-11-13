@@ -9,9 +9,9 @@ function loadFestivalLogic(now = Date.now(), records) {
     static now() { return now; }
   };
   const context = vm.createContext({ window: {}, Intl, Date: DateForTest, TextEncoder });
-  vm.runInContext(fs.readFileSync(path.join(root, "festival-data.js"), "utf8"), context);
+  vm.runInContext(fs.readFileSync(path.join(root, "data/festival-data.js"), "utf8"), context);
   if (records) context.window.FESTIVAL_DATA = records;
-  const source = fs.readFileSync(path.join(root, "script.js"), "utf8");
+  const source = fs.readFileSync(path.join(root, "assets/js/app.js"), "utf8");
   const logic = source.slice(0, source.indexOf('document.addEventListener("click"'));
   vm.runInContext(logic + "\nglobalThis.api = { parseCsv, parseEnglishDate, recordsFromCsv, startOfFestival, statusOf, nepalDateKey, enrich, filteredFestivals, buildCalendar, foldIcs, escapeHtml, countdownValues, validateCalendarRecords, state, festivals, metadata: window.FESTIVAL_META || {} };", context);
   return context.api;

@@ -12,7 +12,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import py as scraper
+from tools import refresh_calendar as scraper
 
 NOW = datetime(2026, 11, 12, 8, tzinfo=timezone.utc)
 FIXTURE = json.loads((Path(__file__).parent / 'fixtures/festivals-2083.json').read_text(encoding='utf-8'))

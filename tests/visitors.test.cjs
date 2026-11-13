@@ -1,10 +1,10 @@
-﻿const test = require("node:test");
+const test = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
 const { execFileSync } = require("node:child_process");
-const source = fs.readFileSync(path.join(__dirname, "../visitors.js"), "utf8");
+const source = fs.readFileSync(path.join(__dirname, "../assets/js/visitors.js"), "utf8");
 
 async function runCounter(options = {}) {
   const outputs = [{ textContent: "", title: "" }, { textContent: "", title: "" }];

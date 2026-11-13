@@ -5,13 +5,13 @@
   "description": "A buildless Nepali festival countdown and calendar.",
   "scripts": {
     "start": "node tools/serve.mjs",
-    "check": "node --check script.js && node --check parallax.js && node --check visitors.js && node --check festival-data.js && node --check archive/script.js",
-    "test": "node --test tools/festivals.test.cjs tools/visitors.test.cjs",
-    "test:browser": "node tools/browser-check.mjs",
+    "check": "node --check assets/js/app.js && node --check assets/js/parallax.js && node --check assets/js/visitors.js && node --check data/festival-data.js && node --check archive/script.js",
+    "test": "node --test tests/festivals.test.cjs tests/visitors.test.cjs",
+    "test:browser": "node tests/browser-check.mjs",
     "update:data": "node tools/update-data.cjs",
     "artwork:render": "node tools/render-landscape.mjs",
     "build": "node tools/build-static.cjs",
-    "test:scraper": "python -m unittest discover -s tools -p test_scraper.py -v",
-    "update:calendar": "python py.py"
+    "test:scraper": "python -m unittest discover -s tests -p test_scraper.py -v",
+    "update:calendar": "python tools/refresh_calendar.py"
   }
 }

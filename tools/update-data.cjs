@@ -1,8 +1,8 @@
-﻿const fs=require('node:fs');
+const fs=require('node:fs');
 const path=require('node:path');
 const crypto=require('node:crypto');
 const {loadFestivalLogic}=require('./festival-utils.cjs');
-const root=path.resolve(__dirname,'..');
+const root=path.resolve(__dirname,'../data');
 const {recordsFromCsv,validateCalendarRecords}=loadFestivalLogic();
 const source=fs.readFileSync(path.join(root,'nepali_holidays.csv'),'utf8').replace(/\r\n/g,'\n');
 const records=validateCalendarRecords(recordsFromCsv(source));

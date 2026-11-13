@@ -35,7 +35,7 @@ The GitHub Actions workflow in [.github/workflows/calendar.yml](.github/workflow
 1. Runs the scraper regression tests.
 2. Fetches the public JSON navigation data used by Hamro Patro's English holidays client and checks the next-year page. If Hamro Patro refuses cloud requests (HTTP 403) or its data fails validation, uses the unauthenticated JSON feed behind [Nepali Patro’s government-holiday page](https://nepalipatro.com.np/en/government-holiday).
 3. Validates Gregorian dates, weekdays, Nepali year/month/day fields, complete-year coverage, and unexpected data loss.
-4. Updates nepali_holidays.csv, festival-data.js, and festival-meta.json together.
+4. Updates `data/nepali_holidays.csv`, `data/festival-data.js`, and `data/festival-meta.json` together.
 5. Runs the JavaScript/date tests and commits the verified data and last-checked timestamp.
 6. Publishes the same verified files to GitHub Pages in the same workflow run.
 
@@ -52,21 +52,21 @@ Next-year dates are included only after a source publishes a complete calendar. 
 Python 3.10 or newer is required for the scraper. It uses only the Python standard library. The command tries the primary source first, then the approved fallback.
 
 ~~~sh
-python py.py
+python tools/refresh_calendar.py
 npm test
 npm run build
 ~~~
 
-On Windows, use py py.py or the project's virtual-environment Python if python is not on PATH. npm run update:calendar is an alias for python py.py. npm run update:data is retained for deliberately maintained CSV edits; manually edited data is no longer labelled as checked against Hamro Patro until a successful scrape replaces it.
+On Windows, use `py tools/refresh_calendar.py` or the project's virtual-environment Python if `python` is not on PATH. `npm run update:calendar` is an alias for `python tools/refresh_calendar.py`. The scraper reads and writes `data/` by default; use `--output-dir` for a different directory. `npm run update:data` is retained for deliberately maintained CSV edits; manually edited data is no longer labelled as checked against Hamro Patro until a successful scrape replaces it.
 
-The historical CSV parser also accepts the original shifted columns. Source presentation is configured in CATALOG in script.js. Image source notes are in assets/README.md.
+The historical CSV parser also accepts the original shifted columns. Source presentation is configured in `CATALOG` in [assets/js/app.js](assets/js/app.js). Image source notes are in [assets/README.md](assets/README.md).
 
 ## Verify
 
 ~~~sh
 npm run check
 npm test
-python -m unittest discover -s tools -p test_scraper.py -v
+python -m unittest discover -s tests -p test_scraper.py -v
 npm run test:browser
 npm run build
 ~~~
@@ -75,19 +75,52 @@ The browser check needs Node.js 22 or newer, npm start running and an installed 
 
 ## Project files
 
-- index.html — page structure and metadata.
-- styles.css — the Utsav design and responsive layouts.
-- script.js — CSV parsing, date logic, discovery, dialogs, and calendar export.
-- festival-data.js — generated offline snapshot.
-- visitors.js — optional existing Firebase visitor integration.
-- nepali_holidays.csv — maintained festival dates.
-- tools/ — dependency-free development and verification utilities.
-- py.py — validated primary/fallback scraper and atomic file preparation.
-- festival-meta.json — source, checked timestamp, coverage, and CSV checksum.
-- .github/workflows/calendar.yml — daily refresh, validation, and Pages deployment.
-- tools/build-static.cjs — explicit allowlist for public deployment files.
+```text
+.
+├── index.html                  # Site entry point and metadata
+├── package.json                # Development, test, and build commands
+├── assets/
+│   ├── css/styles.css          # Design and responsive layouts
+│   ├── js/
+│   │   ├── app.js              # Festival calendar, countdowns, and exports
+│   │   ├── parallax.js         # Landscape motion and accessibility
+│   │   └── visitors.js         # Optional Firebase visit statistics
+│   ├── images/                # Festival photography and favicon
+│   ├── landscape/             # SVG scenery and mobile variants
+│   └── README.md              # Image sources and artwork notes
+├── data/
+│   ├── nepali_holidays.csv     # Maintained festival dates
+│   ├── festival-data.js        # Generated offline snapshot
+│   └── festival-meta.json      # Source, coverage, and verification metadata
+├── tools/
+│   ├── serve.mjs              # Dependency-free local server
+│   ├── build-static.cjs       # Public deployment allowlist
+│   ├── refresh_calendar.py    # Validated primary/fallback calendar scraper
+│   ├── update-data.cjs        # Snapshot generation for manual CSV changes
+│   ├── festival-utils.cjs     # Shared calendar logic loader for tools/tests
+│   └── render-landscape.mjs   # Editable landscape artwork source
+├── tests/
+│   ├── festivals.test.cjs     # Calendar and date regression tests
+│   ├── visitors.test.cjs      # Visit counter and archive regression tests
+│   ├── test_scraper.py        # Network-free scraper regression tests
+│   ├── browser-check.mjs      # Browser, responsive layout, and export checks
+│   └── fixtures/             # Fixed calendar samples for verification
+├── archive/                  # Original site, linked from the footer
+├── prototypes/               # Separate HTML/CSS design drafts
+├── legacy/                   # Unused original files retained for reference
+├── .github/workflows/        # Daily refresh and GitHub Pages deployment
+└── dist/                     # Generated deployment output (ignored by Git)
+```
 
-The separate figma.html and z.html drafts are not part of the festival application.
+Edit the page in `index.html`, the presentation in `assets/css/`, and browser behavior in `assets/js/`. Keep calendar files together in `data/`; both refresh tools use this location. Asset and data URLs are relative to `index.html`, so the site also works under a GitHub Pages project path.
+
+`npm run build` recreates `dist/` from `index.html`, `assets/`, `data/`, and `archive/`. Tests, tools, prototypes, and legacy reference files stay outside the deployment. The separate `prototypes/figma.html` and `prototypes/z.html` drafts are not part of the festival application.
+
+## Creator attribution
+
+The footer credits [Sujeet Khadka](https://www.sujeetkhadka.com.np/) with a visible HTML link to his portfolio. The page also includes matching author metadata and `WebSite` structured data identifying its creator. The portfolio uses the `www` address as its canonical URL.
+
+These changes become public when the festival site is deployed. They help describe the project and its creator; they do not guarantee a search ranking. Google's [link guidance](https://developers.google.com/search/docs/crawling-indexing/links-crawlable) explains how crawlable links and descriptive link text help discovery.
 
 ## Original site archive
 
