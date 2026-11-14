@@ -2,18 +2,18 @@
 window.FESTIVAL_META = {
   "source": "Nepali Patro",
   "sourceUrl": "https://nepalipatro.com.np/en/government-holiday",
-  "checkedAt": "2026-11-13T00:40:47Z",
+  "checkedAt": "2026-11-14T00:27:22Z",
   "calendarYear": 2083,
   "years": [
     2083
   ],
-  "recordCount": 45,
+  "recordCount": 46,
   "firstDate": "2026-04-14",
   "lastDate": "2027-04-06",
   "nextYearAvailable": false,
   "fallbackUsed": true,
   "retainedRecordCount": 45,
-  "csvSha256": "3fff91e585cf84d6fb9e6ebf01dedb2e02963c513f42fc680d92009869038438"
+  "csvSha256": "af97eafd6fdd23d89d1957a6a1fda3f2402d2c5e76691302f5c05dd93603504c"
 };
 window.FESTIVAL_DATA = [
   {
@@ -155,6 +155,11 @@ window.FESTIVAL_DATA = [
     "name": "Chhath Parva",
     "date": "2026-11-15",
     "nepaliDate": "29 Kartik 2083"
+  },
+  {
+    "name": "Chhath Parba",
+    "date": "2026-11-16",
+    "nepaliDate": "30 Kartik 2083"
   },
   {
     "name": "Guru Nanak Jayanti / Kartik Snan Samapti / Chaturmas Vrata Samapti / Nimbarkacharya Jayanti / Sakimana Punhi",
