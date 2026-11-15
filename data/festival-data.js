@@ -2,7 +2,7 @@
 window.FESTIVAL_META = {
   "source": "Nepali Patro",
   "sourceUrl": "https://nepalipatro.com.np/en/government-holiday",
-  "checkedAt": "2026-11-14T23:20:22Z",
+  "checkedAt": "2026-11-15T23:29:55Z",
   "calendarYear": 2083,
   "years": [
     2083
